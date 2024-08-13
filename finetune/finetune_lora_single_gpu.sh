@@ -6,17 +6,17 @@ DIR=`pwd`
 MODEL="Qwen/Qwen-VL-Chat" #"Qwen/Qwen-VL-Chat"/"Qwen/Qwen-VL" # Set the path if you do not want to load from huggingface directly
 # ATTENTION: specify the path to your training data, which should be a json file consisting of a list of conversations.
 # See the section for finetuning in README for more information.
-DATA="path_to_data"
+DATA="/root/LLM-based-graph-tool/data/datasets/v1_frdetr/v1_frdetr_train.json"
 
 export CUDA_VISIBLE_DEVICES=0
 
-python finetune.py \
+python fintune_Qwen-VL.py \
     --model_name_or_path $MODEL \
     --data_path $DATA \
     --bf16 True \
     --fix_vit True \
     --output_dir output_qwen \
-    --num_train_epochs 5 \
+    --num_train_epochs 20 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 8 \
