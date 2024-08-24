@@ -99,10 +99,15 @@
 本项目主要评估模型识别的准确性，评估模型是否按照指令中规定的格式进行输出，一步到位的识别出图表中的全部信息，包括图表中各部分信息之间的关系，特别是流程图中的父子节点关系，表格中的行列关系，pdf数据中的阅读顺序等。
 
 ## 项目架构
-![Alt text](image.png)
+![Alt text](./img/frame_work.jpg)
 
 ## 笔记
+1. [书生大模型实战营闯关记录----第八关：书生大模型全链路开源开放体系](http://t.csdnimg.cn/Ne6TS)
+2. [书生大模型实战营闯关记录----第七关：模型评估，使用OpenCompass评估大模型，OpenCompass入门](http://t.csdnimg.cn/EWOOq)
+3. [书生大模型实战营闯关记录----第六关：大语言模型微调实战，LoRA和QLoRA微调，理论+Xtuner微调实操](http://t.csdnimg.cn/Ak73v)
+4. [书生大模型实战营闯关记录----第五关：LlamaIndex+Internlm2 RAG实践Demo：效果对比，文档加载，向量库构建，检索器，模型推理](http://t.csdnimg.cn/QTtZv)
+5. [书生大模型实战营闯关记录----第四关：提示词工程实践，什么是Prompt，提示词设计框架CRISPE/CO-STAR，LangGPT结构化提示词](http://t.csdnimg.cn/SQRcI)
+6. [书生大模型实战营闯关记录----第三关：8G 显存玩转书生大模型 Demo](http://t.csdnimg.cn/hvzvD)
+7. [书生大模型实战营闯关记录----第二关：实现word_count统计文本中word频次](http://t.csdnimg.cn/NcA9n)
+8. [书生大模型实战营闯关记录----第一关：Linux基础知识，SSH连接远程服务器，Linux常用命令，创建Anaconda虚拟环境](http://t.csdnimg.cn/YlXwv)
 
-[书生大模型实战营闯关记录----第二关：实现word_count统计文本中word频次](http://t.csdnimg.cn/NcA9n)
-
-[书生大模型实战营闯关记录----第一关：Linux基础知识，SSH连接远程服务器，Linux常用命令，创建Anaconda虚拟环境](http://t.csdnimg.cn/YlXwv)
