@@ -241,6 +241,7 @@ def make_supervised_data_module(
     rank0_print("Loading data...")
 
     train_json = json.load(open(data_args.data_path, "r"))
+    train_json = train_json[::len(train_json)//1000]
     train_dataset = dataset_cls(train_json, tokenizer=tokenizer, max_len=max_len)
 
     if data_args.eval_data_path:

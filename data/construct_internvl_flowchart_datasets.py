@@ -7,8 +7,21 @@ import numpy as np
 import random
 from tqdm import tqdm
 import math
+import copy
+import cv2
+import numpy as np
 
-VOC_base_path = "/root/LLM-based-graph-tool/data/datasets/baseGraphV2"
+        # point_size = 1
+        # point_color = (0, 0, 255) # BGR
+        # thickness = 4 # 可以为 0 、4、8
+
+        # # 要画的点的坐标
+        # # points_list = [(160, 160), (136, 160), (150, 200), (200, 180), (120, 150), (145, 180)]
+
+        # # for point in points_list:
+        #     cv2.circle(img, (200, 10), point_size, point_color, thickness)
+
+VOC_base_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase2000"
 VOC_img_savepath = f"{VOC_base_path}/Images"
 VOC_annots_savepath = f"{VOC_base_path}/dataset"
 SHAPE_CLASSES = {
@@ -26,95 +39,62 @@ SHAPE_CLASSES_RANDOM_RATE=[1/len(SHAPE_CLASSES.keys())]*len(SHAPE_CLASSES.keys()
 
 min_w, min_y = 40, 40        
 data_num = 0
-def construct_json_obj(folder, _id, img_size, objects, save_path):
-    conversations = list()
-    img_obj_mapping = {
-        "arrow": "箭头",
-        "rec": "矩形",
-        "diamond": "菱形",
-        "roundrec": "圆角矩形",
-        "hex": "六边形",
-        "ellipse": "椭圆",
-        "circle": "圆形",
-        "parallel": "平行四边形",
-        "line": "线"
-    }
-    img_names_zh = set([img_obj_mapping[obj["name"]] for obj in objects])
-    conversations.append({
-        "from": "user",
-        "value": f"Picture {_id}: <img>{save_path}</img>\n\n图中都包含有哪些基本图形？"
-    })
-    conversations.append({
-        "from": "assistant",
-        "value": f"图中共包含有下面这几种：{'、'.join(list(img_names_zh))}。"
-    })
-    
-    img_name_set = set([obj["name"] for obj in objects])
-    for n in img_name_set:
-        conversations.append({
-            "from": "user",
-            "value": f"框出图中的{img_obj_mapping[n]}"
-        })
-        n_res = ""
-        for img_obj in objects:
-            if img_obj['name']!=n: continue
-            n_res += f"<ref>{img_obj_mapping[n]}</ref><box>({img_obj['xmin']},{img_obj['ymin']}),({img_obj['xmax']},{img_obj['ymax']})</box>\n"
-        conversations.append({"from": "assistant", "value": n_res})
-    
-    conversations.append({"from": "user", "value": f"框出图中的全部基础图形"})
-    n_res = ""
-    for img_obj in objects:
-        n_res += f"<ref>{img_obj_mapping[img_obj['name']]}</ref><box>({img_obj['xmin']},{img_obj['ymin']}),({img_obj['xmax']},{img_obj['ymax']})</box>\n"
-    conversations.append({"from": "assistant", "value": n_res})
-    return conversations
 
-def construct_json_obj_v2(folder, _id, img_size, objects, save_path):
+def construct_json_obj(folder, _id, img_size, objects, save_path):
     global data_num
     conversations = list()
-    img_obj_mapping = {
-        "arrow": "箭头",
-        "rec": "矩形",
-        "diamond": "菱形",
-        "roundrec": "圆角矩形",
-        "hex": "六边形",
-        "ellipse": "椭圆",
-        "circle": "圆形",
-        "parallel": "平行四边形",
-        "line": "线"
-    }
     cur_dataset = list()
-    img_names_zh = set([img_obj_mapping[obj["name"]] for obj in objects])
-    cur_dataset.append({"id": f"graph_{data_num}", "conversations": [{
-            "from": "user",
-            "value": f"Picture {data_num}: <img>{save_path}</img>\n\n图中都包含有哪些基本图形？"
-        },{
-            "from": "assistant",
-            "value": f"图中共包含有下面这几种：{'、'.join(list(img_names_zh))}。"
-        }]})
-    data_num+=1
     
+    
+    # GrayImage=cv2.cvtColor(image ,cv2.COLOR_BGR2GRAY)
+    # h, w = image.shape[:2]
+    # h, w = map(int, [h/4, w/4])
+    # print(h,w)
+    # # no flip
+    image = cv2.imread(save_path)
+    for img_obj in objects:
+        cv2.rectangle(image, (img_obj['xmin'], img_obj['ymin']), (img_obj['xmax'], img_obj['ymax']), (0, 0, 255))
+        # cv2.line(img, (x_start, y_start), (img_width, y_start), (0,0,0), 1)
+        # cv2.line(img, (x_start, y_start), (x_start, img_height), (0,0,0), 1)
+
+    cv2.imwrite("/root/LLM-based-graph-tool/data/datasets/verify_dataset/basegraph/" + save_path.split("/")[-1], image)
+
     img_name_set = set([obj["name"] for obj in objects])
     for n in img_name_set:
         tmp_conversations = list()
         tmp_conversations.append({
-            "from": "user",
-            "value": f"Picture {data_num}: <img>{save_path}</img>\n\n框出图中的{img_obj_mapping[n]}"
+            "from": "human",
+            "value": f"<image>\nPlease provide the bounding box coordinate of the region this sentence describes: <ref>{n}</ref>"
         })
-        n_res = ""
+        n_res = f"<ref>{n}</ref><box>["
         for img_obj in objects:
             if img_obj['name']!=n: continue
-            n_res += f"<ref>{img_obj_mapping[n]}</ref><box>({img_obj['xmin']},{img_obj['ymin']}),({img_obj['xmax']},{img_obj['ymax']})</box>\n"
-        tmp_conversations.append({"from": "assistant", "value": n_res})
-        cur_dataset.append({"id": f"graph_{data_num}", "conversations": tmp_conversations})
+            n_res += f"[{img_obj['xmin']},{img_obj['ymin']},{img_obj['xmax']},{img_obj['ymax']}],"
+
+        n_res = n_res[:-1] + "]</box>"
+        tmp_conversations.append({"from": "gpt", "value": n_res})
+        cur_dataset.append({"id": data_num,
+            "image": save_path,
+            "width": img_size["width"],
+            "height": img_size["height"],
+            "conversations": copy.deepcopy(tmp_conversations)
+        })
         data_num+=1
 
     fi_conversations = []
-    fi_conversations.append({"from": "user", "value": f"Picture {data_num}: <img>{save_path}</img>\n\n框出图中的全部基础图形"})
-    n_res = ""
+    fi_conversations.append({"from": "human", "value": f"<image>\nPlease detect and label all objects in the following image and mark their positions."})
+    n_res = "Sure, I will detect and label all objects in the image and mark their positions.\n\n```\n"
     for img_obj in objects:
-        n_res += f"<ref>{img_obj_mapping[img_obj['name']]}</ref><box>({img_obj['xmin']},{img_obj['ymin']}),({img_obj['xmax']},{img_obj['ymax']})</box>\n"
-    fi_conversations.append({"from": "assistant", "value": n_res})
-    cur_dataset.append({"id": f"graph_{data_num}", "conversations": fi_conversations})
+        n_res += f"<ref>{img_obj['name']}</ref><box>[[{img_obj['xmin']},{img_obj['ymin']},{img_obj['xmax']},{img_obj['ymax']}], "
+
+    n_res = n_res[:-1] + "]</box>\n```\n"
+    fi_conversations.append({"from": "gpt", "value": n_res})
+
+    cur_dataset.append({"id": data_num,
+            "image": save_path,
+            "width": img_size["width"],
+            "height": img_size["height"],
+            "conversations": fi_conversations})
     data_num+=1
     return cur_dataset
 
@@ -223,24 +203,26 @@ def generate_arrow(img, x_start, y_start, lineType, sw, sh):
 def generate_img(img_width=600, img_height=600, shape_num=9, save_path='./', file_name='1.png'):
     # shape_list = ['process', 'start_end', 'decision', 'scan', 'arrow']
     shape_list = list(SHAPE_CLASSES.keys())
-    img = np.ones((img_width, img_height, 3), dtype=np.uint8)
+    img = np.ones((img_height, img_width, 3), dtype=np.uint8)
     img *= 255 # white background
     rn = int(math.sqrt(shape_num))
-    sw, sh = img_width // rn, img_height // rn
+    sw, sh = (img_width) // rn, (img_height) // rn
     img_objects = list()
     for i in range(shape_num):
-        x_start, y_start = sw * (i%rn), sh * ((i//rn)%rn)
         lineType = random.randint(1,3)
+        x_start, y_start =  sw * (i%rn), sh * ((i//rn)%rn)
+
+
         shape_type = np.random.choice(shape_list, 1, p=SHAPE_CLASSES_RANDOM_RATE)[0]
         if shape_type == 'rec':
-            xmin, ymin = random.randint(sw//10, sw//6-1), random.randint(sw//8, sh//5-1)
-            xmax, ymax = random.randint(sw//4, sw-4), random.randint(sh//4, 2*sw//3)
+            xmin, ymin = random.randint(sw//10, sw//6-1), random.randint(sh//8, sh//5-1)
+            xmax, ymax = random.randint(sw//4, sw-4), random.randint(sh//4, sh//2)
             # xmax, ymax = xmin+140, ymin+60
             cv2.rectangle(img, (x_start+xmin, y_start+ymin), (x_start+xmax, y_start+ymax), (0, 0, 0), lineType)
             img_objects.append({"name":shape_type, "xmin": x_start+xmin, "ymin": y_start+ymin, "xmax": x_start+xmax, "ymax": y_start+ymax})
         elif shape_type == 'ellipse': # 椭圆
-            centre_x, centre_y = random.randint(2*sw//5, 3*sw//5), random.randint(2*sh//5, 3*sh//5)
-            axes_x, axes_y = random.randint(1*sw//6, 2*sw//5), random.randint(sw//8, sw//3)
+            centre_x, centre_y = random.randint(3*sw//7, sw//2), random.randint(3*sh//7, sh//2)
+            axes_x, axes_y = random.randint(1*sw//6, 2*sw//5), random.randint(sh//8, sh//5)
             cv2.ellipse(img, (x_start+centre_x, y_start+centre_y), (max(axes_x, axes_y), min(axes_x, axes_y)), 0, 0, 360, (0, 0, 0), lineType) #画椭圆
             img_objects.append({"name":shape_type, 
                                 "xmin": x_start+centre_x-max(axes_x, axes_y), 
@@ -261,7 +243,7 @@ def generate_img(img_width=600, img_height=600, shape_num=9, save_path='./', fil
         elif shape_type == 'diamond': #菱形
             centre_x, centre_y = random.randint(2*sw//5, 3*sw//5), random.randint(2*sh//5, 3*sh//5)
             # axes_x, axes_y = random.randint(min_w, min(centre_x, sw-centre_x)-4), random.randint(min_y, min(centre_y, sh-centre_y)-4)
-            axes_x, axes_y = random.randint(sw//6, 2*sw//5), random.randint(sw//6, 2*sw//5)
+            axes_x, axes_y = random.randint(sw//6, 2*sw//5), random.randint(sh//6, 2*sh//5)
             pts = np.array([[x_start+centre_x, y_start+centre_y-axes_y], 
                             [x_start+centre_x+axes_x, y_start+centre_y], 
                             [x_start+centre_x, y_start+centre_y+axes_y], 
@@ -274,9 +256,9 @@ def generate_img(img_width=600, img_height=600, shape_num=9, save_path='./', fil
                                 "ymax": y_start+centre_y+axes_y})
             
         elif shape_type == 'parallel': # 平行四边形
-            xmin, ymin = random.randint(0, sw//2-min_w), random.randint(0, sh//2-min_y)
-            # xmax, ymax = random.randint(sw//2+min_w, sw-4), random.randint(sh//2+min_y, sh//2+min_y+30)
-            xmax, ymax = xmin + 100, ymin+40
+            xmin, ymin = random.randint(0, sw//4), random.randint(0, sh//4)
+            xmax, ymax = random.randint(sw//2+10, sw-10), random.randint(sh//2+10, sh//2+30)
+            # xmax, ymax = xmin + 100, ymin+40
             bios = random.randint(6, (xmax-xmin)//3)
             pts = np.array([[x_start+xmin+bios, y_start+ymin], [x_start+xmax, y_start+ymin], [x_start+xmax-bios, y_start+ymax], [x_start+xmin, y_start+ymax]])
             cv2.polylines(img, [pts], True, (0, 0, 0), lineType)
@@ -313,9 +295,9 @@ def generate_datasets(args):
     for i in tqdm(range(args['num']), desc="Datasets:"):
         i_w = random.randint(60, 100)*10
         i_h = random.randint(i_w//10-1, 100)*10
-        max_item_num= np.random.choice([4, 9, 16], 1, p=[0.3, 0.4,0.3])[0]
+        max_item_num= np.random.choice([4, 9, 16, 25, 36], 1, p=[0.1, 0.1, 0.3, 0.3, 0.2])[0]
         img_objects = generate_img(i_w, i_h, max_item_num, args['images_savepath'], f"{i}.png")
-        tmp_dataset = construct_json_obj_v2(args['folder'], i, {"width":i_w, "height":i_h}, img_objects, f"{args['images_savepath']}/{i}.png")
+        tmp_dataset = construct_json_obj(args['folder'], i, {"width":i_w, "height":i_h}, img_objects, f"{args['images_savepath']}/{i}.png")
         # all_base_graph_dataset.append({"id": f"graph_{i}", "conversations": conversations})
         all_base_graph_dataset.extend(tmp_dataset)
     
@@ -325,7 +307,7 @@ def generate_datasets(args):
 
 train_args = {
     'folder': 'train',
-    'num': 500,
+    'num': 1000,
     'images_savepath': VOC_img_savepath,
     'save_path': VOC_annots_savepath
 }

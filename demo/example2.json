@@ -1,0 +1,16 @@
+{
+    "id": 0,
+    "image": "images/00000000.jpg",
+    "conversations": [
+        {
+            "from": "human",
+            "value": "<image>\nCan you extract any readable text from the image?"
+        },
+        {
+            "from": "gpt",
+            "value": "Dares Wins Vol. 5 Tommy's Heroes Vol. 6: For Tomorrow Vol. 7: Closing Time miniseries. Clark Kent is being interviewed about Superman's connection to notorious killer Tommy Monaghan. Taking the conversation..."
+        }
+    ],
+    "width": 897,
+    "height": 1152
+}

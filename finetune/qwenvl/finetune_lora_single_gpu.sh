@@ -6,8 +6,7 @@ DIR=`pwd`
 MODEL="Qwen/Qwen-VL-Chat" #"Qwen/Qwen-VL-Chat"/"Qwen/Qwen-VL" # Set the path if you do not want to load from huggingface directly
 # ATTENTION: specify the path to your training data, which should be a json file consisting of a list of conversations.
 # See the section for finetuning in README for more information.
-DATA="/root/LLM-based-graph-tool/data/datasets/v1_frdetr/v1_frdetr_train.json"
-
+DATA="/root/LLM-based-graph-tool/data/datasets/filtered_train_dataset.json"
 export CUDA_VISIBLE_DEVICES=0
 
 python fintune_Qwen-VL.py \
@@ -15,14 +14,14 @@ python fintune_Qwen-VL.py \
     --data_path $DATA \
     --bf16 True \
     --fix_vit True \
-    --output_dir output_qwen \
+    --output_dir output_qwen/fcr_v1 \
     --num_train_epochs 20 \
-    --per_device_train_batch_size 1 \
-    --per_device_eval_batch_size 1 \
+    --per_device_train_batch_size 4 \
+    --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 8 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 1000 \
+    --save_steps 20 \
     --save_total_limit 10 \
     --learning_rate 1e-5 \
     --weight_decay 0.1 \
@@ -31,7 +30,7 @@ python fintune_Qwen-VL.py \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
     --report_to "none" \
-    --model_max_length 2048 \
+    --model_max_length 4096 \
     --lazy_preprocess True \
     --gradient_checkpointing \
     --use_lora

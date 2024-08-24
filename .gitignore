@@ -7,6 +7,9 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+output_internvl
+repo
+merged
 .Python
 build/
 develop-eggs/
