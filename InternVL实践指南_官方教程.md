@@ -243,15 +243,8 @@ GPUS=1 PER_DEVICE_BATCH_SIZE=1 sh shell/internvl2.0/2nd_finetune/internvl2_2b_in
 GPUS=8 PER_DEVICE_BATCH_SIZE=1 sh shell/internvl2.0/2nd_finetune/internvl2_2b_internlm2_1_8b_dynamic_res_2nd_finetune_lora.sh
 ```
 
-```bash
-NPROC_PER_NODE=1 xtuner train internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir /root/LLM-based-graph-tool/output_internvl/internvl_sft_flowchart --deepspeed deepspeed_zero1
-
-```
 ## 合并推理
-```bash
-python3 convert_to_official.py internvl_v2_internlm2_2b_qlora_finetune.py /root/LLM-based-graph-tool/output_internvl/internvl_sft_flowchart/iter_21888.pth /root/LLM-based-graph-tool/output_internvl/InternVL2-2B/v1
 
-```
 
 ## 效果评估
 
