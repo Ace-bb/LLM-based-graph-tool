@@ -18,19 +18,24 @@ from xtuner.utils import PROMPT_TEMPLATE
 #                          PART 1  Settings                           #
 #######################################################################
 # Model
-path = '/root/model/InternVL2-2B'
+path = '/root/models/InternVL2-26B'
 
 # Data
-data_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/dataset/internvl2_train_dataset.json"
-image_folder = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/Images"
+# data_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/dataset/internvl2_train_dataset.json"
+data_path = "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/v3/dataset/flowchart2dot.json"
+# data_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbaseall5000/dataset/base_graph_data.json"
+# image_folder = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/Images"
+image_folder = "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/v3/images"
+# image_folder = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbaseall5000/Images"
+# image_folder = ""
 prompt_template = PROMPT_TEMPLATE.internlm2_chat
-max_length = 4096
+max_length = 8192
 
 # Scheduler & Optimizer
-batch_size = 8  # per_device 
+batch_size = 4 # per_device 
 accumulative_counts = 4
 dataloader_num_workers = 4
-max_epochs = 16
+max_epochs = 8
 optim_type = AdamW
 # official 1024 -> 4e-5
 lr = 4e-5
@@ -54,17 +59,17 @@ model = dict(
     quantization_llm=False,  # or False
     quantization_vit=False,  # or True and uncomment visual_encoder_lora
     # comment the following lines if you don't want to use Lora in llm
-    # llm_lora=dict(
-    #     type=LoraConfig,
-    #     r=128,
-    #     lora_alpha=256,
-    #     lora_dropout=0.05,
-    #     target_modules=None,
-    #     task_type='CAUSAL_LM'),
+    llm_lora=dict(
+        type=LoraConfig,
+        r=128,
+        lora_alpha=256,
+        lora_dropout=0.05,
+        target_modules=None,
+        task_type='CAUSAL_LM'),
     # uncomment the following lines if you don't want to use Lora in visual encoder # noqa
-    # visual_encoder_lora=dict(
-    #     type=LoraConfig, r=64, lora_alpha=16, lora_dropout=0.05,
-    #     target_modules=['attn.qkv', 'attn.proj', 'mlp.fc1', 'mlp.fc2'])
+    visual_encoder_lora=dict(
+        type=LoraConfig, r=64, lora_alpha=16, lora_dropout=0.05,
+        target_modules=['attn.qkv', 'attn.proj', 'mlp.fc1', 'mlp.fc2'])
 )
 
 #######################################################################

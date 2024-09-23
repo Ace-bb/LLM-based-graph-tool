@@ -1,4 +1,4 @@
-# InternVL 部署微调实践
+[# InternVL 部署微调实践
 
 > 我们选定的任务是让InternVL-2B生成文生图提示词，这个任务需要VLM对图片有格式化的描述并输出。
 
@@ -179,7 +179,7 @@ from xtuner.utils import PROMPT_TEMPLATE
 #                          PART 1  Settings                           #
 #######################################################################
 # Model
-path = '/root/model/InternVL2-2B'
+path = '/root/models/InternVL2-2B'
 
 # Data
 data_root = '/root/InternLM/datasets/CLoT_cn_2000/'
@@ -351,7 +351,9 @@ log_processor = dict(by_epoch=False)
 这里使用之前搞好的configs进行训练。咱们要调整一下batch size，并且使用qlora。要不半卡不够用的 QAQ。
 
 ```bash
-NPROC_PER_NODE=1 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir ./output_internvl/internvl_sft_flowchart  --deepspeed deepspeed_zero1
+CUDA_VISIBLE_DEVICES=1 NPROC_PER_NODE=1 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir ./output_internvl/internvl_sft_flowchart2dot_v2  --deepspeed deepspeed_zero1
+
+MKL_SERVICE_FORCE_INTEL=1 MKL_THREADING_LAYER=GNU NPROC_PER_NODE=2 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir ./output_internvl/internvl_sft_flowchart2dot_v2  --deepspeed deepspeed_zero1
 ```
 
 ![image](https://github.com/user-attachments/assets/ff50a2ef-c56e-4349-9cf6-60e037cd5cab)
@@ -368,7 +370,9 @@ NPROC_PER_NODE=1 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --wo
 
 ```bash
 # transfer weights
-python3 ./convert_to_official.py ./internvl_v2_internlm2_2b_qlora_finetune.py ./output_internvl/internvl_sft_flowchart/iter_3000.pth ./models/InternVL2-2B/
+python3 ./convert_to_official.py ./internvl_v2_internlm2_2b_qlora_finetune.py ./output_internvl/internvl_sft_flowchart2dot_v2/iter_1984.pth ./models/InternVL2-2B-flowdot_v2/
+
+/root/LLM-based-graph-tool/output_internvl/internvl_sft_flowchart2dot2/iter_1920.pth
 ```
 
 最后我们的模型在：`./models/InternVL2-2B/`，文件格式：
@@ -396,3 +400,4 @@ python3 ./convert_to_official.py ./internvl_v2_internlm2_2b_qlora_finetune.py ./
 部署模型进行推理的代码见：[lmdeploy推理](./demo/lmdeploy_internvl2.py)
 
 
+]

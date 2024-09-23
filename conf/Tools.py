@@ -1,4 +1,3 @@
-import json
 
 from tqdm import tqdm
 import json
@@ -14,24 +13,28 @@ class Tools:
     def llm_check_yes_no(self, llm):
         ...
     
-    def read_json(self, file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
+    def read_json(self, json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         return data
 
-    def read_jsonl(self, file_path):
+    def read_jsonl(self, jsonl_path):
         json_data = list()
-        with open(file_path, 'r', encoding="utf-8") as f:
+        with open(jsonl_path, 'r', encoding="utf-8") as f:
             all_data = f.readlines()
-            for line in tqdm(all_data, total=len(all_data), desc=f"Load {file_path}"):
+            for line in tqdm(all_data, total=len(all_data), desc=f"Load {jsonl_path}"):
                 json_data.append(json.loads(line))
         return json_data
     
+    def read_file(self, file_path):
+        with open(file_path, 'r', encoding="utf-8") as f:
+            return f.read()
+        
     # data/TreeRelateDialogs/v1/LLMChecked
-    def write_2_json(self, data, save_path = 'default'):
+    def write_2_json(self, data, file_path = 'default'):
         self.file_lock.acquire()
-        if not os.path.exists('/'.join(save_path.split('/')[:-1])): os.makedirs('/'.join(save_path.split('/')[:-1]))
-        with open(save_path, 'w', encoding='utf-8') as f:
+        if not os.path.exists('/'.join(file_path.split('/')[:-1])): os.makedirs('/'.join(file_path.split('/')[:-1]))
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False)
         self.file_lock.release()
     
@@ -133,6 +136,7 @@ class Tools:
         all_dirs = list()
         all_file_names = list()
         for root,dirs,files in os.walk(dir_path):
+            # print(f"dirs:{root}----files:{files}")
             if len(files)!=0:
                 for f in files:
                     # all_files.append(os.path.join(root, f))
@@ -141,4 +145,39 @@ class Tools:
                         "dirs": root.replace(dir_path+os.sep, ''),
                         "filepath": os.path.join(root, f)
                     })
+        self.write_2_json(all_files, "./alf.json")
         return all_files
+
+    def draw_image_annotation(self, img_path, annots):
+        import cv2
+
+        # 读取图片
+        img = cv2.imread(img_path)
+
+        # 遍历注释并绘制图形
+        for annot in annots:
+            if annot['type'] == 'rectangle':
+                # 绘制矩形
+                cv2.rectangle(img, (annot['x1'], annot['y1']), (annot['x2'], annot['y2']), annot['color'], annot['thickness'])
+            elif annot['type'] == 'circle':
+                # 绘制圆形
+                cv2.circle(img, (annot['center_x'], annot['center_y']), annot['radius'], annot['color'], annot['thickness'])
+            elif annot['type'] == 'line':
+                # 绘制直线
+                cv2.line(img, (annot['x1'], annot['y1']), (annot['x2'], annot['y2']), annot['color'], annot['thickness'])
+            elif annot['type'] == 'text':
+                # 绘制文本
+                cv2.putText(img, annot['text'], (annot['x'], annot['y']), cv2.FONT_HERSHEY_SIMPLEX, annot['font_scale'], annot['color'], annot['thickness'])
+
+        # 保存绘制后的图片
+        output_path = img_path.replace('.jpg', '_annotated.jpg')
+        cv2.imwrite(output_path, img)
+        return output_path
+    
+    def save_dot_2_img(self, dot_content, img_path):
+        from graphviz import Source
+        graph = Source(dot_content)
+        # 保存 .dot 源文件
+        if not os.path.exists(os.path.dirname(img_path)): os.makedirs(os.path.dirname(img_path))
+        # print(f"img_path:{img_path}")
+        graph.render(img_path, format='png', cleanup=True) 

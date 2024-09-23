@@ -21,7 +21,7 @@ import numpy as np
         # # for point in points_list:
         #     cv2.circle(img, (200, 10), point_size, point_color, thickness)
 
-VOC_base_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase2000"
+VOC_base_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbaseall5000"
 VOC_img_savepath = f"{VOC_base_path}/Images"
 VOC_annots_savepath = f"{VOC_base_path}/dataset"
 SHAPE_CLASSES = {
@@ -61,6 +61,7 @@ def construct_json_obj(folder, _id, img_size, objects, save_path):
 
     img_name_set = set([obj["name"] for obj in objects])
     for n in img_name_set:
+        break
         tmp_conversations = list()
         tmp_conversations.append({
             "from": "human",
@@ -295,7 +296,7 @@ def generate_datasets(args):
     for i in tqdm(range(args['num']), desc="Datasets:"):
         i_w = random.randint(60, 100)*10
         i_h = random.randint(i_w//10-1, 100)*10
-        max_item_num= np.random.choice([4, 9, 16, 25, 36], 1, p=[0.1, 0.1, 0.3, 0.3, 0.2])[0]
+        max_item_num= np.random.choice([4, 9, 16, 25], 1, p=[0.1, 0.1, 0.5, 0.3])[0]
         img_objects = generate_img(i_w, i_h, max_item_num, args['images_savepath'], f"{i}.png")
         tmp_dataset = construct_json_obj(args['folder'], i, {"width":i_w, "height":i_h}, img_objects, f"{args['images_savepath']}/{i}.png")
         # all_base_graph_dataset.append({"id": f"graph_{i}", "conversations": conversations})
@@ -307,7 +308,7 @@ def generate_datasets(args):
 
 train_args = {
     'folder': 'train',
-    'num': 1000,
+    'num': 5000,
     'images_savepath': VOC_img_savepath,
     'save_path': VOC_annots_savepath
 }
