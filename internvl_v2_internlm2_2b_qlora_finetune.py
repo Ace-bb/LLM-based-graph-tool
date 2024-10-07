@@ -18,14 +18,15 @@ from xtuner.utils import PROMPT_TEMPLATE
 #                          PART 1  Settings                           #
 #######################################################################
 # Model
-path = '/root/models/InternVL2-26B'
+path = '/root/models/InternVL2-8B'
 
 # Data
 # data_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/dataset/internvl2_train_dataset.json"
-data_path = "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/v3/dataset/flowchart2dot.json"
+data_path = "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/dotV1/datasets/flowchart2dot_train.json"
+# data/datasets/Flowchart2DotDatasets/dotV1/datasets/flowchart2json_train.json
 # data_path = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbaseall5000/dataset/base_graph_data.json"
 # image_folder = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/Images"
-image_folder = "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/v3/images"
+image_folder = "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/dotV1/FlowchartImages"
 # image_folder = "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbaseall5000/Images"
 # image_folder = ""
 prompt_template = PROMPT_TEMPLATE.internlm2_chat
@@ -35,18 +36,18 @@ max_length = 8192
 batch_size = 4 # per_device 
 accumulative_counts = 4
 dataloader_num_workers = 4
-max_epochs = 8
+max_epochs = 2
 optim_type = AdamW
 # official 1024 -> 4e-5
-lr = 4e-5
+lr = 1e-5
 betas = (0.9, 0.999)
 weight_decay = 0.01
 max_norm = 1  # grad clip
 warmup_ratio = 0.03
 
 # Save
-save_steps = 500
-save_total_limit = 1  # Maximum checkpoints to keep (-1 means unlimited)
+save_steps = 100
+save_total_limit = -1  # Maximum checkpoints to keep (-1 means unlimited)
 
 #######################################################################
 #            PART 2  Model & Tokenizer & Image Processor              #
@@ -67,9 +68,9 @@ model = dict(
         target_modules=None,
         task_type='CAUSAL_LM'),
     # uncomment the following lines if you don't want to use Lora in visual encoder # noqa
-    visual_encoder_lora=dict(
-        type=LoraConfig, r=64, lora_alpha=16, lora_dropout=0.05,
-        target_modules=['attn.qkv', 'attn.proj', 'mlp.fc1', 'mlp.fc2'])
+    # visual_encoder_lora=dict(
+    #     type=LoraConfig, r=64, lora_alpha=16, lora_dropout=0.05,
+    #     target_modules=['attn.qkv', 'attn.proj', 'mlp.fc1', 'mlp.fc2'])
 )
 
 #######################################################################
@@ -173,7 +174,9 @@ env_cfg = dict(
 )
 
 # set visualizer
-visualizer = None
+# visualizer = None
+from mmengine.visualization import Visualizer, TensorboardVisBackend
+visualizer = dict(type=Visualizer, vis_backends=[dict(type=TensorboardVisBackend)])
 
 # set log level
 log_level = 'INFO'

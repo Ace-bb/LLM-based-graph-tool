@@ -108,6 +108,16 @@ xtuner version
 xtuner help
 ```
 
+### GraphViz安装
+```bash
+pip install networkx[default]
+pip install graphviz
+apt install graphviz
+apt-get update
+apt-get install libgraphviz-dev
+pip install pygraphviz
+pip install pydot
+```
 ![image](https://github.com/user-attachments/assets/e1659d01-ad99-44a6-ae6f-b44dce81cf3c)
 
 ## 准备微调数据集
@@ -353,7 +363,7 @@ log_processor = dict(by_epoch=False)
 ```bash
 CUDA_VISIBLE_DEVICES=1 NPROC_PER_NODE=1 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir ./output_internvl/internvl_sft_flowchart2dot_v2  --deepspeed deepspeed_zero1
 
-MKL_SERVICE_FORCE_INTEL=1 MKL_THREADING_LAYER=GNU NPROC_PER_NODE=2 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir ./output_internvl/internvl_sft_flowchart2dot_v2  --deepspeed deepspeed_zero1
+MKL_SERVICE_FORCE_INTEL=1 MKL_THREADING_LAYER=GNU NPROC_PER_NODE=2 xtuner train ./internvl_v2_internlm2_2b_qlora_finetune.py  --work-dir ./output_internvl/internvl_sft_flowchart2dot_v4  --deepspeed deepspeed_zero1
 ```
 
 ![image](https://github.com/user-attachments/assets/ff50a2ef-c56e-4349-9cf6-60e037cd5cab)
@@ -370,9 +380,11 @@ MKL_SERVICE_FORCE_INTEL=1 MKL_THREADING_LAYER=GNU NPROC_PER_NODE=2 xtuner train 
 
 ```bash
 # transfer weights
-python3 ./convert_to_official.py ./internvl_v2_internlm2_2b_qlora_finetune.py ./output_internvl/internvl_sft_flowchart2dot_v2/iter_1984.pth ./models/InternVL2-2B-flowdot_v2/
+python3 ./convert_to_official.py ./internvl_v2_internlm2_2b_qlora_finetune.py ./output_internvl/internvl_sft_flowchart2json_v1/iter_1100.pth ./models/InternVL2-8B-flow2json_v1/
 
+/root/LLM-based-graph-tool/output_internvl/internvl_sft_flowchart2json_v1/iter_1100.pth
 /root/LLM-based-graph-tool/output_internvl/internvl_sft_flowchart2dot2/iter_1920.pth
+output_internvl/internvl_sft_flowchart2dot_v3/iter_1000.pth
 ```
 
 最后我们的模型在：`./models/InternVL2-2B/`，文件格式：

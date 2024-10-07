@@ -1,0 +1,171 @@
+{
+    "directed": False,
+    "multigraph": False,
+    "graph": {
+        "name": "pic"
+    },
+    "nodes": [
+        {
+            "label": "Apgar评分又称阿氏评分",
+            "color": "black",
+            "shape": "box",
+            "id": "0"
+        },
+        {
+            "label": "判断新生儿出生时有无窒息的程度",
+            "color": "black",
+            "shape": "parallelogram",
+            "id": "1"
+        },
+        {
+            "label": "检查项目：皮肤颜色、脉搏、刺激的反应、肌张力、呼吸",
+            "color": "black",
+            "shape": "box",
+            "id": "2"
+        },
+        {
+            "label": "出生后做两次测评",
+            "color": "black",
+            "shape": "box",
+            "id": "3"
+        },
+        {
+            "label": "出生后 1 分钟内和 5 分钟内",
+            "color": "black",
+            "shape": "ellipse",
+            "id": "4"
+        },
+        {
+            "label": "得分不同处理方式不同",
+            "color": "black",
+            "shape": "diamond",
+            "id": "5"
+        },
+        {
+            "label": "Apgar 以0、1、2分评分，10分为满分",
+            "color": "black",
+            "shape": "box",
+            "id": "6"
+        },
+        {
+            "label": "8～10 分为正常",
+            "color": "black",
+            "shape": "box",
+            "id": "7"
+        },
+        {
+            "label": "4～7 分为轻度窒息",
+            "color": "black",
+            "shape": "box",
+            "id": "8"
+        },
+        {
+            "label": "0～3 分为重度窒息",
+            "color": "black",
+            "shape": "parallelogram",
+            "id": "9"
+        },
+        {
+            "label": "正常评分胎儿无需特殊处理",
+            "color": "black",
+            "shape": "box",
+            "id": "10"
+        },
+        {
+            "label": "轻度窒息需清理呼吸道、吸氧、保暖",
+            "color": "black",
+            "shape": "box",
+            "id": "11"
+        },
+        {
+            "label": "重度窒息需紧急抢救",
+            "color": "black",
+            "shape": "box",
+            "id": "12"
+        },
+        {
+            "label": "包括清理呼吸道、刺激呼吸、保暖",
+            "color": "black",
+            "shape": "box",
+            "id": "13"
+        },
+        {
+            "label": "必要时气管插管并给予药物处理",
+            "color": "black",
+            "shape": "box",
+            "id": "14"
+        }
+    ],
+    "links": [
+        {
+            "color": "black",
+            "source": "0",
+            "target": "1"
+        },
+        {
+            "color": "black",
+            "source": "0",
+            "target": "2"
+        },
+        {
+            "color": "black",
+            "source": "1",
+            "target": "3"
+        },
+        {
+            "color": "black",
+            "source": "2",
+            "target": "4"
+        },
+        {
+            "color": "black",
+            "source": "3",
+            "target": "5"
+        },
+        {
+            "color": "black",
+            "source": "4",
+            "target": "6"
+        },
+        {
+            "color": "black",
+            "source": "5",
+            "target": "7"
+        },
+        {
+            "color": "black",
+            "source": "5",
+            "target": "8"
+        },
+        {
+            "color": "black",
+            "source": "5",
+            "target": "9"
+        },
+        {
+            "color": "black",
+            "source": "7",
+            "target": "10"
+        },
+        {
+            "color": "black",
+            "source": "8",
+            "target": "11"
+        },
+        {
+            "color": "black",
+            "source": "9",
+            "target": "12"
+        },
+        {
+            "color": "black",
+            "source": "12",
+            "target": "13"
+        },
+        {
+            "color": "black",
+            "source": "12",
+            "target": "14"
+        }
+    ]
+}

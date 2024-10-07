@@ -1,0 +1,16 @@
+{
+    "exclude": [
+        "data",
+        "temp",
+        "repo",
+        "utils",
+        "output_internvl",
+        "output_qwen",
+        "models",
+        "merged",
+        "repo"
+    ],
+    "include": [
+        "*.py"
+    ]
+} 

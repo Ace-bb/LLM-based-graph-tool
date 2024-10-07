@@ -18,7 +18,7 @@ def draw_dot_img(img_save_path, res):
     dot_source.render(img_save_path, format='png')
 
 img_path = '/root/LLM-based-graph-tool/data/datasets/internvl_baseGraphV1/Images/0.png'
-pipe = pipeline('/root/LLM-based-graph-tool/models/InternVL2-2B-flowdot_v2')
+pipe = pipeline('/root/LLM-based-graph-tool/models/InternVL2-8B-flow2json_v1')
 
 {
     # "arrow": 1, # √
