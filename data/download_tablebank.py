@@ -11,7 +11,11 @@ from openxlab.dataset import info
 info(dataset_repo='OpenDataLab/TableBank') #数据集信息及文件列表查看
 
 from openxlab.dataset import get
-get(dataset_repo='OpenDataLab/TableBank', target_path='/root/LLM-based-graph-tool/data/datasets/')  # 数据集下载
+get(dataset_repo='OpenDataLab/TableBank', target_path='./datasets/')  # 数据集下载
 
 from openxlab.dataset import download
-download(dataset_repo='OpenDataLab/TableBank',source_path='/README.md', target_path='/root/LLM-based-graph-tool/data/datasets/') #数据集文件下载
+download(dataset_repo='OpenDataLab/TableBank',source_path='/README.md', target_path='./datasets/') #数据集文件下载
+
+info(dataset_repo='OpenDataLab/DocBank') #数据集信息及文件列表查看
+get(dataset_repo='OpenDataLab/DocBank', target_path='/root/LLM-based-graph-tool/data/datasets/DocBank/')  # 数据集下载
+download(dataset_repo='OpenDataLab/DocBank',source_path='/README.md', target_path='/root/LLM-based-graph-tool/data/datasets/DocBank/') #数据集文件下载
