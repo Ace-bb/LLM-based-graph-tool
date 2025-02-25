@@ -83,4 +83,45 @@ digraph G {
 '''
     dot_contents = re.findall(r'```dot(.*?)```', s, re.DOTALL)
     print(dot_contents[0])
-test()
+
+def mermaid():
+    # Creating a simple flowchart diagram
+    from python_mermaid.diagram import (
+        MermaidDiagram,
+        Node,
+        Link
+    )
+
+    # Family members
+    meg = Node("Meg")
+    jo = Node("Jo")
+    beth = Node("Beth")
+    amy = Node("Amy")
+    robert = Node("Robert March")
+
+    the_march_family = [meg, jo, beth, amy, robert]
+
+    # Create links
+    family_links = [
+        Link(robert, meg),
+        Link(robert, jo),
+        Link(robert, beth),
+        Link(robert, amy),
+    ]
+
+    chart = MermaidDiagram(
+        title="Little Women",
+        nodes=the_march_family,
+        links=family_links
+    )
+
+    print(chart)
+
+def log():
+    from rich.console import Console
+    # 设置Console将日志输出到文件中保存，同时在控制台输出
+    console = Console(record=True)
+    console.print("Hello, World!")
+    
+if __name__=="__main__":
+    log()

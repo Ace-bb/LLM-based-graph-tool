@@ -2,10 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+data/FlowchartDatasets
 # C extensions
 *.so
 models
+output
+logs
 # Distribution / packaging
 output_internvl
 repo

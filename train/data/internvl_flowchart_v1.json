@@ -1,0 +1,17 @@
+{
+    "flowchart_base_grapg_train": {
+        "root": "playground/data/",
+        "annotation": "./playground/opensource/internvl_frdetr_tain_dataset.jsonl",
+        "data_augment": false,
+        "repeat_time": 1,
+        "length": 2000
+    },
+    "frdetr_base_grapg_train": {
+        "root": "playground/data/",
+        "annotation": "./playground/opensource/base_graph_data.jsonl",
+        "data_augment": false,
+        "repeat_time": 1,
+        "length": 3512
+    }
+  }
+  
