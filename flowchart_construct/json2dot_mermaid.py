@@ -20,11 +20,11 @@ def json_2_dot(flowchart_title, json_data):
     nodes = json_data["nodes"]
     edges = json_data["edges"]
     dot_data = ""
-    dot = Digraph(comment=flowchart_title)
+    dot = Digraph()
     for node in nodes:
-        dot.node(str(node["id"]), node["Name"])
+        dot.node(name=node["id"], **node['attributes'])
     for edge in edges:
-        dot.edge(edge["sourceNode"], edge["targetNode"], label=edge["label"])
+        dot.edge(edge["source"], edge["target"], **edge['attributes'])
     return dot.source
 
 def json_2_mermaid(flowchart_title, json_data):

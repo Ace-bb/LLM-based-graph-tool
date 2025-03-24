@@ -1,0 +1,9 @@
+{
+  "flowchart2dot": {
+    "root": "/root/LLM-based-graph-tool/data/datasets/Flowchart2DotDatasets/dotV2/FlowchartImages/",
+    "annotation": "data/datasets/Flowchart2DotDatasets/dotV2/datasets/flowchart2dot_train.jsonl",
+    "data_augment": false,
+    "repeat_time": 1,
+    "length": 2000
+  }
+}

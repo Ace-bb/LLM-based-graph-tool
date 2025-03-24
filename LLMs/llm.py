@@ -1,4 +1,5 @@
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
+from json import JSONDecodeError
 from typing import Union, Dict, List, Optional
 
 class LLM:
@@ -22,4 +23,25 @@ class LLM:
         else:
             return [choice.message.content for choice in completion.choices]
         
-        
+    def generate(self, prompt)->str|None:
+        tries = 0
+        while tries < 20:
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        }
+                    ]
+                )
+                return response.choices[0].message.content
+            except OpenAIError as e:
+                print(e, self.client.api_key)
+                tries+=1
+            except JSONDecodeError as e:
+                print(e, prompt, tries)
+                tries +=1
+                
+        return ''

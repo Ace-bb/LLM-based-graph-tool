@@ -11,6 +11,7 @@ from prompts.prompts import load_evaluation_prompt
 from conf.logger import setup_logger
 from utils.utils import majority_vote
 from LLMs.llm import LLM
+from Evaluation.flowchart_eval import eval_llm_result
 
 def main():
     parser = argparse.ArgumentParser(
@@ -43,6 +44,8 @@ def main():
     args = parser.parse_args()
     model_name = args.model_name
     data_path = args.data_path
+    eval_llm_result(data_path)
+    return
     dataset = args.dataset
     output_type = args.output_type
     exp_dir = os.path.dirname(data_path)

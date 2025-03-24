@@ -1,10 +1,14 @@
-import os, json, cv2
+import os, json, cv2, re, random, glob
+from conf.settings import *
 from conf.Tools import Tools
 import copy
 from graphviz import Source
 from graphviz import Digraph
 from tqdm import tqdm
 import numpy as np
+from flowchart_construct.data_format import create_internvl_data
+from flowchart_construct.utils import dot2image, trans2rect
+
 DxDiseaseTreeDots = "data/datasets/DxDiseaseTreeDots"
 DxDiseaseTreeImg = "data/datasets/DotImages"
 version = "dotV2"
@@ -69,8 +73,6 @@ class FLowchartLLM:
                 sub_nodes.extend(tmp_sub_nodes)
                 sub_edges.extend(tmp_sub_edges)
         return sub_nodes, sub_edges
-
-
 
     def check_flowchart_binary(self, flowchart_data):
         # return [flowchart_data]
@@ -186,96 +188,169 @@ def construct_dot_img():
     flowchart_llm = FLowchartLLM()
     flowchart_llm.tansform_json_2_dot_v2(json_path="data/datasets/Flowchart2DotDatasets/DxDiseaseTreeJSON", dot_save_path=f"data/datasets/Flowchart2DotDatasets/{version}/Dot", img_save_path=f"data/datasets/Flowchart2DotDatasets/{version}/FlowchartImages", json_save_path=f"data/datasets/Flowchart2DotDatasets/{version}/JSON")
 
-a={
-    "id": 0,
-    "image": "/root/LLM-based-graph-tool/data/datasets/InternVL2_flowchart_Dataset/vbase1000/Images/0.png",
-    "width": 630,
-    "height": 640,
-    "conversations": [
-        {
-            "from": "human",
-            "value": "<image>\nPlease provide the bounding box coordinate of the region this sentence describes: <ref>circle</ref>"
-        },
-        {
-            "from": "gpt",
-            "value": "<ref>circle</ref><box>[[278,24,354,100],[515,10,611,106],[174,299,228,353],[407,415,489,497]]</box>"
-        }
-    ]
-}
 
-def construct_dot_img_train_datasets():
-    flowchart_img_path = f"data/datasets/Flowchart2DotDatasets/{version}/FlowchartImages"
-    dot_path = f"data/datasets/Flowchart2DotDatasets/{version}/Dot"
-    Anont_save_path = f"data/datasets/Flowchart2DotDatasets/{version}/datasets"
-    all_imgs = tools.get_all_dirs_sub_files(flowchart_img_path)
-    annot_datasets = []
-    import random
-    random.shuffle(all_imgs)
-    train_datasets, eval_datasets = [], []
-    all_imgs = all_imgs[:2200]
-    all_num = len(all_imgs)
-    all_questions = tools.read_json("data/DOT_Questions.json")
+class FlowchartDatasetConstructor:
+    def __init__(self, config, model_name):
+        self.config = config
+        self.logger = logger
+        self.r1 = 0
+        self.model_name = model_name
+        pass
     
-    for _id, item in tqdm(enumerate(all_imgs), total=all_num):
-        if not item["filename"].endswith(".png"): continue
-        img = cv2.imread(item["filepath"])
-        if img is None:
-            print(f"Failed to load image {item['filepath']}")
-            continue
-        
-        height, width = img.shape[:2]
-        dot_content = tools.read_file(f"data/datasets/Flowchart2DotDatasets/{version}/Dot/{item['dirs']}/{item['filename'].replace('.png', '')}.dot")
-        
-        data_item = {
-            "id": _id,
-            "image": f"/root/LLM-based-graph-tool/{item['filepath']}",
-            "width": width,
-            "height": height,
-            "conversations": [
-                {
-                    "from": "human",
-                    "value": """<image>\n""" + random.sample(all_questions, 1)[0]
-#                     """
-# {
-#     "nodes": [],
-#     "edges": []
-# }""" # 请将图中的流程图转换成DOT格式，使用DOT语言来描述流程图。
-                },
-                {
-                    "from": "gpt",
-                    "value": f"{dot_content}"
-                }
-            ]
-        }
-        if _id < (all_num-200):
-            train_datasets.append(copy.deepcopy(data_item))
-        else:
-            eval_datasets.append(copy.deepcopy(data_item))
+    def rewrite_dot_content(self, dot_content):
+        """给dot_content添加样式
+        随机添加不同类型的样式，可以添加的流程图样式有：
+        1. 修改节点的形状、背景颜色、边框颜色、字体颜色、字体大小、节点大小等
+        2. 修改连接线的颜色、粗细、箭头样式等
 
-    tools.write_2_json(train_datasets, f"{Anont_save_path}/flowchart2dot_train.json")
-    tools.write_2_json(eval_datasets, f"{Anont_save_path}/flowchart2dot_eval.json")
+        Args:
+            dot_content (_type_): _description_
+        """
+        from prompts.rewrite_dot import get_rewrite_dot_prompt
+        from LLMs.llm import LLM
+        llm = LLM(self.config['api_key'], self.config['base_url'], self.model_name)
+        rewrite_dot = llm.generate(get_rewrite_dot_prompt(dot_content=dot_content))
+        if rewrite_dot is None: return None
+        if "```dot" in rewrite_dot:
+            # 正则表达式匹配```dot和```之间的内容
+            rewrite_dot = rewrite_dot.strip().strip("\n")
+            try:
+                rewrite_dot = re.search(r'```dot(.*?)```', rewrite_dot, re.S).group(1).strip()
+            except Exception as e:
+                print(e)
+                print(rewrite_dot)
+                tools.write_2_txt(rewrite_dot, f"output/cache/{self.r1}.md")
+                self.r1+=1
+                return None
+            return rewrite_dot
+        return None
 
-def dot_to_mermaid(dot_content):
-    """
-    将dot格式的流程图转换成mermaid格式
-    :param dot_content: str, dot格式的内容
-    :return: str, mermaid格式的内容
-    """
-    mermaid_content = "flowchart TD\n"
-    lines = dot_content.splitlines()
-    for line in lines:
-        line = line.strip()
-        if '->' in line:
-            parts = line.split('->')
-            start_node = parts[0].strip()
-            end_node = parts[1].strip().strip(';')
-            mermaid_content += f"    {start_node} --> {end_node}\n"
-        elif '[' in line and ']' in line:
-            node = line.split('[')[0].strip()
-            mermaid_content += f"    {node}\n"
-    return mermaid_content
+    def construct_img2dot_datasets(self, input_path, save_path):
+        print("Start to construct img2dot datasets.")
+        dot_path = input_path
+        res_save_folder = f"data/FlowchartDatasets/TrainDatasets/{save_path}"
+        all_dot_files = glob.glob(f"{dot_path}/**/*.dot", recursive=True)
+        all_num = len(all_dot_files)
+        random.shuffle(all_dot_files)
+        
+        train_datasets, eval_datasets = [], []
+        def run_llm(_id, dot_content, flowchart_name):
+            rewrite_dot = self.rewrite_dot_content(dot_content)
+            if rewrite_dot is None: return None
+            img_path = dot2image(rewrite_dot, flowchart_name, f"{res_save_folder}/Images/{flowchart_name}", "png")
+            if img_path is None: return None
+            tools.write_2_txt(rewrite_dot, f"{res_save_folder}/Dot/{flowchart_name}.dot")
+            data = create_internvl_data(_id, img_path, rewrite_dot)
+            return data
+        
+        run_paras = []
+        num = 0
+        num_map = {}
+        for _id, dot_f in tqdm(enumerate(all_dot_files), total=all_num):
+            flowchart_name = dot_f.replace(dot_path, '').replace('.dot', '')
+            dot_content = tools.read_file(dot_f)
+            # 统计dot_content中label=的数量
+            node_num = dot_content.count("label=")
+            if node_num < 10: continue
+            dot_content = "digraph " + dot_content[dot_content.find("{"):].strip()
+            # 在0-1之间随机取数
+            rate = random.random()
+            if rate > 0.8:
+                # 保持样式
+                img_path = dot2image(dot_content, flowchart_name, f"{res_save_folder}/Images/{flowchart_name}", "png")
+                if img_path is None: continue
+                tools.write_2_txt(dot_content, f"{res_save_folder}/Dot/{flowchart_name}.dot")
+                data = create_internvl_data(_id, img_path, dot_content)
+                train_datasets.append(data)
+            elif rate <=0.8 and rate >=0.3:
+                # 修改样式
+                run_paras.append(((_id, dot_content, flowchart_name)))
+                continue
+                rewrite_dot = self.rewrite_dot_content(dot_content)
+                if rewrite_dot is None: continue
+                img_path = dot2image(rewrite_dot, flowchart_name, f"{res_save_folder}/Images/{flowchart_name}", "png")
+                if img_path is None: continue
+                tools.write_2_txt(rewrite_dot, f"{res_save_folder}/Dot/{flowchart_name}.dot")
+                data = create_internvl_data(_id, img_path, rewrite_dot)
+                train_datasets.append(data)
+            else:
+                # 全部节点样式修改为矩形
+                rect_dot_content = trans2rect(dot_f)
+                if rect_dot_content is None: continue
+                img_path = dot2image(rect_dot_content, flowchart_name, f"{res_save_folder}/Images/{flowchart_name}", "png")
+                if img_path is None: continue
+                tools.write_2_txt(rect_dot_content, f"{res_save_folder}/Dot/{flowchart_name}.dot")
+                data = create_internvl_data(_id, img_path, rect_dot_content)
+                train_datasets.append(data)
+            if len(train_datasets)%100==0:
+                tools.write_2_json(train_datasets, f"{res_save_folder}/datasets/flowchart2dot_train.json")
+        rewrited_dot_contents = tools.multi_thread_run(24, run_llm, run_paras, description="Rewrite img2dot datasets")
+        for rtc in rewrited_dot_contents:
+            if rtc is not None:
+                train_datasets.append(rtc)
+                if len(train_datasets)%100==0:
+                    tools.write_2_json(train_datasets, f"{res_save_folder}/datasets/flowchart2dot_train.json")
+        # train_datasets.extend(rewrited_dot_contents)
+        os.makedirs(f"{res_save_folder}/datasets", exist_ok=True)
+        tools.write_2_json(train_datasets, f"{res_save_folder}/datasets/flowchart2dot_train.json")
+        # tools.write_2_json(eval_datasets, f"data/datasets/Flowchart2DotDatasets/{version}/datasets/flowchart2dot_eval.json")
+        
+        
+    def construct_dot_img_train_datasets(self, input_path, ):
+        flowchart_img_path = input_path
+        dot_path = f"data/datasets/Flowchart2DotDatasets/{version}/Dot"
+        Anont_save_path = f"data/datasets/Flowchart2DotDatasets/{version}/datasets"
+        all_imgs = tools.get_all_dirs_sub_files(flowchart_img_path)
+        annot_datasets = []
+        random.shuffle(all_imgs)
+        train_datasets, eval_datasets = [], []
+        all_imgs = all_imgs[:2200]
+        all_num = len(all_imgs)
+        all_questions = tools.read_json("data/DOT_Questions.json")
+        
+        for _id, item in tqdm(enumerate(all_imgs), total=all_num):
+            if not item["filename"].endswith(".png"): continue
+            img = cv2.imread(item["filepath"])
+            if img is None:
+                print(f"Failed to load image {item['filepath']}")
+                continue
+            
+            height, width = img.shape[:2]
+            dot_content = tools.read_file(f"data/datasets/Flowchart2DotDatasets/{version}/Dot/{item['dirs']}/{item['filename'].replace('.png', '')}.dot")
+            
+            data_item = {
+                "id": _id,
+                "image": f"/root/LLM-based-graph-tool/{item['filepath']}",
+                "width": width,
+                "height": height,
+                "conversations": [
+                    {
+                        "from": "human",
+                        "value": """<image>\n""" + random.sample(all_questions, 1)[0]
+                    },
+                    {
+                        "from": "gpt",
+                        "value": f"{dot_content}"
+                    }
+                ]
+            }
+            if _id < (all_num-200):
+                train_datasets.append(copy.deepcopy(data_item))
+            else:
+                eval_datasets.append(copy.deepcopy(data_item))
+
+        tools.write_2_json(train_datasets, f"{Anont_save_path}/flowchart2dot_train.json")
+        tools.write_2_json(eval_datasets, f"{Anont_save_path}/flowchart2dot_eval.json")
+
+def flowchart_operate(args):
+    input_file = args.input_file
+    output_file = args.output_file
+    print(f"input_file:{input_file},\n output_file:{output_file}")
+    flowchart_constructor = FlowchartDatasetConstructor(load_config("qwen-plus"), "qwen-plus-2025-01-25")
+    flowchart_constructor.construct_img2dot_datasets(input_path=input_file, save_path=output_file)
 
 def main():
+    from dot2mermaid import dot_to_mermaid
     tools = Tools()
     all_img_files = tools.get_all_dirs_sub_files(DxDiseaseTreeImg)
     data_num = 0

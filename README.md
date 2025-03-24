@@ -213,6 +213,16 @@
 
 初步采用全量微调的方式，微调了 `InternVL2-2B`模型，同时设置 `freeze_visual_encoder=False`, ` quantization_llm=False`, `quantization_vit=False`，在一张A100上进行训练。
 
+
+#### 下载原始微调数据集
+建议是在开源的 InternVL 1.2 的通用数据基础上添加新的领域特定数据。这将增强下游能力，同时保留基础技能。当然，您也可以根据您的需求选择仅在新数据上进行微调。
+
+开源数据集下载：
+- HuggingFace链接：[OpenGVLab/InternVL-Chat-V1-2-SFT-Data](https://huggingface.co/datasets/OpenGVLab/InternVL-Chat-V1-2-SFT-Data)
+- 使用git-lfs和lf-mirror下载
+  - 安装lf-mirror: `pip install -U huggingface_hub`
+  - 设置代理链接： `export HF_ENDPOINT=https://hf-mirror.com`
+  - 下载数据集：`huggingface-cli download --repo-type dataset --resume-download OpenGVLab/InternVL-Chat-V1-2-SFT-Data --local-dir ./data/datasets/OpenGVLab/InternVL-Chat-V1-2-SFT-Data`
 #### 开始微调
 
 ##### 微调InternVL2.5-8B模型

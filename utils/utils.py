@@ -1,7 +1,7 @@
 import base64
 import io
 import re
-
+from utils.aliyun_oss import upload_file_to_oss
 from PIL import Image
 
 
@@ -36,6 +36,8 @@ def encode_image_anthropic(image_path):
 
 
 def encode_image(image_path, model_name=None):
+    return upload_file_to_oss(image_path, image_path)
+    return encode_image_openai(image_path)
     if model_name == "claude-3-5-sonnet":
         return encode_image_anthropic(image_path)
     elif model_name in ["gpt-4o", "gpt-4o-mini"]:

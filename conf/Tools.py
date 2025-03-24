@@ -33,13 +33,13 @@ class Tools:
     # data/TreeRelateDialogs/v1/LLMChecked
     def write_2_json(self, data, file_path = 'default'):
         self.file_lock.acquire()
-        if not os.path.exists('/'.join(file_path.split('/')[:-1])): os.makedirs('/'.join(file_path.split('/')[:-1]))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False)
         self.file_lock.release()
     
     def write_2_txt(self, data, file_path):
-        if not os.path.exists('/'.join(file_path.split('/')[:-1])): os.makedirs('/'.join(file_path.split('/')[:-1]))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(data) 
         
@@ -59,7 +59,9 @@ class Tools:
             r = job.result()
             try:
                 if job.done() and r != None:
-                    res.append(r)
+                    yield r
+                    
+                    # res.append(r)
                     # f.write(json.dumps(r, ensure_ascii=False)+'\n')
             except Exception as e:
                 print(e)

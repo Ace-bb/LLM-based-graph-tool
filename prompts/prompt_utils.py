@@ -161,11 +161,11 @@ def load_messages(model_name, prompt, image=None):
                 },
             ],
             # Open source VLMs
-            "Llama-3.2-11B": [
+            "llama": [
                 {
                     "role": "user",
                     "content": [
-                        {"type": "image"},
+                        {"type": "image", "image": image},
                         {"type": "text", "text": prompt},
                     ],
                 },
@@ -174,7 +174,7 @@ def load_messages(model_name, prompt, image=None):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "image"},
+                        {"type": "image", "image": image},
                         {"type": "text", "text": prompt},
                     ],
                 },
@@ -188,25 +188,22 @@ def load_messages(model_name, prompt, image=None):
                     ],
                 },
             ],
-            "Qwen2-VL-7B": [
+            "qwen": [
                 {
                     "role": "user",
                     "content": [
-                        {"type": "image", "image": image},
-                        {"type": "text", "text": prompt},
-                    ],
-                },
-            ],
-            "Qwen2-VL-72B": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image", "image": image},
+                        {"type": "image_url", "image_url": image},
                         {"type": "text", "text": prompt},
                     ],
                 },
             ],
         }
+    if "qwen" in model_name:
+        return templates["qwen"]
+    elif "llama" in model_name:
+        return templates["llama"]
+    elif "gpt" in model_name:
+        return templates["gpt-4o"]
     return templates.get(model_name)
 
 

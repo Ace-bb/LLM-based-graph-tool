@@ -38,6 +38,7 @@ def dot_to_json(dot_file_path):
 
     # 添加边信息
     for edge in graph.get_edges():
+        print(edge)
         graph_json['edges'].append({
             'source': edge.get_source(),
             'target': edge.get_destination(),

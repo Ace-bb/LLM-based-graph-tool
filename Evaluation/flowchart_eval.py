@@ -9,6 +9,9 @@ from tqdm import tqdm
 from openai import OpenAI
 import base64
 import pydot
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from rich.console import Console
+print = Console().log
 
 def transform_dot_2_json(dot_content):
     P_list = pydot.graph_from_dot_data(dot_content)
@@ -20,6 +23,7 @@ def transform_dot_2_json(dot_content):
         json_graph = nx.node_link_data(dot_graph)
         return {"nodes": json_graph["nodes"], "edges": json_graph["links"]}
     else:
+        print("AXSAXAXSF")
         print(dot_content)
         return {"nodes": [], "edges": []}
 
@@ -30,6 +34,158 @@ def eval_dot_format(dot_content):
     except:
         return False
 
+def eval_dot_render_success_rate(model_results):
+    """评估dot文件的渲染成功率
+
+    Args:
+        dot_contents (list): 全部dot内容
+
+    Returns:
+        _type_: float
+    """
+    success_num = 0
+    for f_name in model_results.keys():
+        P_list = pydot.graph_from_dot_data(model_results[f_name]['llm'])
+        if P_list!=None and len(P_list)>0: 
+            graph = P_list[0]
+            os.makedirs(os.path.dirname(f"output/tmp_imgs/{f_name}"), exist_ok=True)
+            try:
+                graph.write_png(f"output/tmp_imgs/{f_name}.png")
+                success_num +=1
+            except Exception as e:
+                print(e)
+                print(f"Error in {f_name}")
+        
+    return success_num/len(model_results.keys())
+    
+def eval_flowchart_nodes(model_output_nodes, golden_output_nodes):
+    """评估流程图中的节点的准确率，精确率和召回率
+
+    Args:
+        model_output_nodes (list): 模型预测的流程图节点
+        golden_output_nodes (list): 流程图节点的真实值
+    """
+    model_output_nodes = [node.strip().replace("\n", "").lower() for node in model_output_nodes]
+    golden_output_nodes = [node.strip().replace("\n", "").lower() for node in golden_output_nodes]
+    right_num = 0
+    for node in model_output_nodes:
+        if node in golden_output_nodes: right_num +=1
+    accuracy = right_num/len(model_output_nodes)
+    precision = right_num/len(golden_output_nodes)
+    recall = right_num/len(model_output_nodes)
+    return accuracy, precision, recall
+    
+    model_output_nodes_map = {k:i for i,k in enumerate(list(set(model_output_nodes)))}
+    golden_output_nodes_map = {k:i for i,k in enumerate(list(set(golden_output_nodes)))}
+    model_pred = [model_output_nodes_map[node] for node in model_output_nodes]
+    golden_pred = [golden_output_nodes_map[node] for node in golden_output_nodes]
+    accuracy = accuracy_score(golden_pred, model_pred)
+    precision = precision_score(golden_pred, model_pred, average='macro')
+    recall = recall_score(golden_pred, model_pred, average='macro')
+    
+    return accuracy, precision, recall
+
+def extract_str(s):
+    """提取字符串中的全部英文字母和中文汉字，去除其他字符"""
+    return ''.join(re.findall(r'[\u4e00-\u9fa5a-zA-Z]', s))
+
+def eval_flowchart_edges(model_output_edges, golden_output_edges):
+    """评估流程图中的连接线的准确率，精确率和召回率
+
+    Args:
+        model_output_edges (list): 模型预测的流程图连接线
+        golden_output_edges (list): 流程图连接线的真实值
+    """
+    model_output_edges = [f"{edge['source']}->{edge['target']}".lower() for edge in model_output_edges]
+    golden_output_edges = [f"{edge['source']}->{edge['target']}".lower() for edge in golden_output_edges]
+    right_num = 0
+    for edge in model_output_edges:
+        if edge in golden_output_edges: right_num +=1
+    accuracy = right_num/len(model_output_edges)
+    precision = right_num/len(golden_output_edges)
+    recall = right_num/len(model_output_edges)
+    return accuracy, precision, recall
+    
+    
+    model_output_edges_map = {k:i for i,k in enumerate(list(set(model_output_edges)))}
+    golden_output_edges_map = {k:i for i,k in enumerate(list(set(golden_output_edges)))}
+    model_pred = [model_output_edges_map[edge] for edge in model_output_edges]
+    golden_pred = [golden_output_edges_map[edge] for edge in golden_output_edges]
+    accuracy = accuracy_score(golden_pred, model_pred)
+    precision = precision_score(golden_pred, model_pred, average='macro')
+    recall = recall_score(golden_pred, model_pred, average='macro')
+    
+    return accuracy, precision, recall
+
+def eval_llm_result(model_result_path):
+    """评估模型将流程图转换为Dot格式的结果
+
+    Args:
+        model_result_path (str): 模型结果存储的地址
+    """
+    tools = Tools()
+    model_results = tools.read_json(model_result_path)
+    all_eval_results = []
+    model_output_nodes, model_output_edges = [], []
+    golden_output_nodes, golden_output_edges = [], []
+    model_output_dots = []
+    for key, result in model_results.items():
+        model_output_dots.append(result["llm"])
+        model_output = transform_dot_2_json(result["llm"])
+        
+        model_id2node = {}
+        for node in model_output['nodes']:
+            if "label" in node.keys():
+                label = extract_str(node['label']) # node['label'].strip().replace("\n", "").replace("\"", "")
+                model_output_nodes.append(label)
+                model_id2node[node['id']] = label
+            elif "id" in node.keys():
+                label = extract_str(node['id']) # node['id'].strip().replace("\n", "").replace("\"", "")
+                model_output_nodes.append(label)
+                model_id2node[node['id']] = label
+            else:    print(f"===={node}====")
+        # tools.write_2_json([k for k in model_id2node.keys()], f"output/test/{key}/model.json")
+        for edge in model_output['edges']:
+            model_output_edges.append({
+                "source": model_id2node[edge['source']],
+                "target": model_id2node[edge['target']]
+            })
+            # model_output_edges.append(f"{edge['source']}->{edge['target']}")
+        
+        golden_output = result["json"]
+        # tools.write_2_json([n['Name'] for n in golden_output['nodes']], f"output/test/{key}/golden.json")
+        id2node = {}
+        for node in golden_output['nodes']:
+            label = extract_str(node['Name']) # node['Name'].strip().replace("\n", "").replace("\"", "")
+            golden_output_nodes.append(label)
+            id2node[str(node['id'])] = label
+        for edge in golden_output['edges']:
+            # golden_output_edges.append(f"{id2node[edge['sourceNode']]}->{id2node[edge['targetNode']]}")
+            if edge['sourceNode'] not in id2node.keys() or edge['targetNode'] not in id2node.keys(): continue
+            golden_output_edges.append({
+                "source": id2node[edge['sourceNode']],
+                "target": id2node[edge['targetNode']]
+            })
+    # 排序
+    model_output_nodes = sorted(model_output_nodes)
+    golden_output_nodes = sorted(golden_output_nodes)
+    tools.write_2_json(model_output_nodes, model_result_path.replace('.json', '_model_output_nodes.json'))
+    tools.write_2_json(golden_output_nodes, model_result_path.replace('.json', '_golden_output_nodes.json'))
+    node_accuracy, node_precision, node_recall = eval_flowchart_nodes(model_output_nodes, golden_output_nodes)
+    edge_accuracy, edge_precision, edge_recall = eval_flowchart_edges(model_output_edges, golden_output_edges)
+    
+    eval_result = {
+        "dot_format": eval_dot_render_success_rate(model_results),
+        "node_accuracy": node_accuracy,
+        "node_precision": node_precision,
+        "node_recall": node_recall,
+        "edge_accuracy": edge_accuracy,
+        "edge_precision": edge_precision,
+        "edge_recall": edge_recall
+    }
+    
+    tools.write_2_json(eval_result, model_result_path.replace('.json', '_eval_result.json'))
+    
 def eval_json_format(model_output, golden_output):
     eval_result = {
         "dot_format": False,
