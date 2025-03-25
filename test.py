@@ -1,8 +1,8 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from glob import glob
-
-import os
+from conf.Tools import Tools
+import os, json
 def run_langchin():
     os.environ['OPENAI_API_BASE'] = "https://fast.xeduapi.com/v1"
     # os.environ['OPENAI_API_BASE'] = "https://api.xeduapi.com"
@@ -184,6 +184,9 @@ def trans_flowchart2dot():
         
 if __name__=="__main__":
     # tansform_dot2json()
-    files = glob("data/FlowchartDatasets/TrainDatasets/Image2DotV1/Images/**/*.png", recursive=True)
-    print(len(files))
-    # trans_flowchart2dot()
+    tools = Tools()
+    data = tools.read_json("data/FlowchartDatasets/TrainDatasets/Image2DotV1/datasets/flowchart2dot_train.json")
+    # 写jsonl文件
+    with open("data/FlowchartDatasets/TrainDatasets/Image2DotV1/datasets/flowchart2dot_train.jsonl", "w", encoding="utf-8") as f:
+        for item in data:
+            f.write(json.dumps(item, ensure_ascii=False)+"\n")

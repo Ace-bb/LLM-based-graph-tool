@@ -369,8 +369,11 @@ class FlowchartFilter:
         """获取流程图的最大深度
         flowchart_data是由nodes和edges组成的字典，nodes是节点列表，edges是边列表
         """
+        visited_node_id = []
         def dfs(node_id, depth, id2node, id2edge):
             max_depth = depth
+            if node_id in visited_node_id: return max_depth
+            visited_node_id.append(node_id)
             for edge in id2edge.get(node_id, []):
                 max_depth = max(max_depth, dfs(edge['target'], depth + 1, id2node, id2edge))
             return max_depth
@@ -409,7 +412,7 @@ class FlowchartFilter:
         if len(roots)>1: return False
         for root in source_node:
             root_sons = [edge['target'] for edge in edges if edge['source']==root]
-            if len(root_sons) > 3: return False
+            if len(root_sons) > 5: return False
         return True
     
                 
@@ -429,17 +432,21 @@ class FlowchartFilter:
         
     def filter_all_dots(self, dot_flowchart_folder, save_folder):
         tools = Tools()
-        all_dot_files = glob.glob(f"{dot_flowchart_folder}/**/*.dot", recursive=True)
+        all_dot_files = glob.glob(f"{dot_flowchart_folder}/Dot/**/*.dot", recursive=True)
         
-        for dot_f in tqdm(all_dot_files, desc="Filtering"):
+        for dot_f in tqdm(all_dot_files[5840:], desc="Filtering"):
             if self.filter(dot_f):
                 print(f"Filter {dot_f} successfully.")
                 # 将dot文件复制到save_folder下
-                dot_relate_path = dot_f.replace(dot_flowchart_folder, '')
-                save_path = f"{save_folder}{dot_relate_path}"
-                if not os.path.exists(os.path.dirname(save_path)):
-                    os.makedirs(os.path.dirname(save_path))
+                dot_relate_path = dot_f.replace(dot_flowchart_folder+"/Dot/", '')
+                img_relate_path = dot_relate_path.replace(".dot", ".png")
+                sourcec_img_path = f"data/FlowchartDatasets/TrainDatasets/Image2DotV1/Images/{img_relate_path}"
+                target_img_path = f"data/FlowchartDatasets/TrainDatasets/Image2DotV2/Images/{img_relate_path}"
+                save_path = f"{save_folder}/Dot/{dot_relate_path}"
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                os.makedirs(os.path.dirname(target_img_path), exist_ok=True)
                 shutil.copy(dot_f, save_path)
+                shutil.copy(sourcec_img_path, target_img_path)
             
             
 def flowchart_operate(args):
