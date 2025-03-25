@@ -1,5 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
+from glob import glob
 
 import os
 def run_langchin():
@@ -183,4 +184,6 @@ def trans_flowchart2dot():
         
 if __name__=="__main__":
     # tansform_dot2json()
-    trans_flowchart2dot()
+    files = glob("data/FlowchartDatasets/TrainDatasets/Image2DotV1/Images/**/*.png", recursive=True)
+    print(len(files))
+    # trans_flowchart2dot()

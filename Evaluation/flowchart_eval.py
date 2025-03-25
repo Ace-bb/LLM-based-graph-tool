@@ -130,6 +130,8 @@ def eval_llm_result(model_result_path):
     golden_output_nodes, golden_output_edges = [], []
     model_output_dots = []
     for key, result in model_results.items():
+        if "DifferentialDiagnosisEnglish" not in key: continue
+        print(key)
         model_output_dots.append(result["llm"])
         model_output = transform_dot_2_json(result["llm"])
         

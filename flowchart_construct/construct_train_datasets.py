@@ -342,12 +342,117 @@ class FlowchartDatasetConstructor:
         tools.write_2_json(train_datasets, f"{Anont_save_path}/flowchart2dot_train.json")
         tools.write_2_json(eval_datasets, f"{Anont_save_path}/flowchart2dot_eval.json")
 
+
+import networkx as nx
+import pydot
+import shutil
+from tqdm import tqdm
+
+class FlowchartFilter:
+    def __init__(self):
+        pass
+    
+    def transform_dot_2_json(self, dot_content):
+        P_list = pydot.graph_from_dot_data(dot_content)
+
+        if P_list!=None and len(P_list)>0:
+            dot_c = nx.nx_pydot.from_pydot(P_list[0])
+            dot_graph = nx.Graph(dot_c)
+            # dot_graph = nx.Graph(dot_content)
+            json_graph = nx.node_link_data(dot_graph)
+            return {"nodes": json_graph["nodes"], "edges": json_graph["links"]}
+        else:
+            print(dot_content)
+            return {"nodes": [], "edges": []}
+    
+    def get_tree_max_depth(self, flowchart_data):
+        """获取流程图的最大深度
+        flowchart_data是由nodes和edges组成的字典，nodes是节点列表，edges是边列表
+        """
+        def dfs(node_id, depth, id2node, id2edge):
+            max_depth = depth
+            for edge in id2edge.get(node_id, []):
+                max_depth = max(max_depth, dfs(edge['target'], depth + 1, id2node, id2edge))
+            return max_depth
+        
+        nodes, edges = flowchart_data['nodes'], flowchart_data['edges']
+        id2node = {node['id']: node for node in nodes}
+        id2edge = {}
+        for edge in edges:
+            if edge['source'] not in id2edge:
+                id2edge[edge['source']] = []
+            id2edge[edge['source']].append(edge)
+        
+        roots = [node['id'] for node in nodes if node['id'] not in [edge['target'] for edge in edges]]
+        max_depth = 0
+        for root in roots:
+            max_depth = max(max_depth, dfs(root, 1, id2node, id2edge))
+        
+        return max_depth
+
+    def check_tree_max_children(self, flowchart_data):
+        """检查流程图的最大子节点数
+        flowchart_data是由nodes和edges组成的字典，nodes是节点列表，edges是边列表
+
+        Args:
+            flowchart_data (_type_): _description_
+        """
+        nodes, edges = flowchart_data['nodes'], flowchart_data['edges']
+        source_node = [edge['source'] for edge in edges]
+        target_node = [edge['target'] for edge in edges]
+        id2node = {}
+        for node in nodes: id2node[node['id']] = node
+        roots = []
+        for sn in source_node:
+            if sn not in target_node:
+                roots.append(sn)
+        if len(roots)>1: return False
+        for root in source_node:
+            root_sons = [edge['target'] for edge in edges if edge['source']==root]
+            if len(root_sons) > 3: return False
+        return True
+    
+                
+    def filter(self, flowchart_save_path):
+        """过滤单个流程图
+
+        Args:
+            flowchart_save_path (_type_): _description_
+        """
+        tools = Tools()
+        dot_content = tools.read_file(flowchart_save_path)
+        dot_json = self.transform_dot_2_json(dot_content)
+        max_depth = self.get_tree_max_depth(dot_json)
+        if max_depth <5: return False
+        if self.check_tree_max_children(dot_json): return False
+        return True
+        
+    def filter_all_dots(self, dot_flowchart_folder, save_folder):
+        tools = Tools()
+        all_dot_files = glob.glob(f"{dot_flowchart_folder}/**/*.dot", recursive=True)
+        
+        for dot_f in tqdm(all_dot_files, desc="Filtering"):
+            if self.filter(dot_f):
+                print(f"Filter {dot_f} successfully.")
+                # 将dot文件复制到save_folder下
+                dot_relate_path = dot_f.replace(dot_flowchart_folder, '')
+                save_path = f"{save_folder}{dot_relate_path}"
+                if not os.path.exists(os.path.dirname(save_path)):
+                    os.makedirs(os.path.dirname(save_path))
+                shutil.copy(dot_f, save_path)
+            
+            
 def flowchart_operate(args):
     input_file = args.input_file
     output_file = args.output_file
     print(f"input_file:{input_file},\n output_file:{output_file}")
-    flowchart_constructor = FlowchartDatasetConstructor(load_config("qwen-plus"), "qwen-plus-2025-01-25")
-    flowchart_constructor.construct_img2dot_datasets(input_path=input_file, save_path=output_file)
+    if args.op_type == "construct":
+        flowchart_constructor = FlowchartDatasetConstructor(load_config("qwen-plus"), "qwen-plus-2025-01-25")
+        flowchart_constructor.construct_img2dot_datasets(input_path=input_file, save_path=output_file)
+    elif args.op_type == "filter":
+        flowchart_filter = FlowchartFilter()
+        flowchart_filter.filter_all_dots(input_file, output_file)
+        pass
 
 def main():
     from dot2mermaid import dot_to_mermaid
@@ -367,7 +472,7 @@ def main():
         height, width = img.shape[:2]
         aspect_ratio = width / height
 
-        if aspect_ratio > 2:
+        if (aspect_ratio > 2):
             # print(aspect_ratio)
             continue
             # print(f"Image {item['filename']} has an aspect ratio greater than 2.")
