@@ -9,13 +9,25 @@ from utils.utils import extract_representation, encode_image
 
 
 def inference(args):
+    print(args)
     dataset = args.dataset
     model_name = args.model_name
     output_type = args.output_type # 'qwen-plus', 
-    for model_name in ['qwen-vl-plus-latest', 'qwen2.5-vl-72b-instruct', 'qwen2.5-vl-7b-instruct', 'qwen2.5-vl-3b-instruct', 'llama3.2-90b-vision-instruct', 'llama3.2-11b-vision']:
-        run_llm_inference(dataset, model_name, output_type)
+    engine = args.engine
+    run_llm_inference(dataset, model_name, output_type)
+    # if engine == 'api':
+    #     for model_name in ['qwen-vl-plus-latest', 'qwen2.5-vl-72b-instruct', 'qwen2.5-vl-7b-instruct', 'qwen2.5-vl-3b-instruct', 'llama3.2-90b-vision-instruct', 'llama3.2-11b-vision']:
+    #         run_llm_inference(dataset, model_name, output_type)
+    # elif engine == "lmdeploy":
+    #     run_llm_deploy_inference(dataset, model_name, output_type)
+
+def run_llm_deploy_inference(dataset, model_name, output_type):
+    config = load_config(model_name)
+    
+    # Setup logger
         
 def run_llm_inference(dataset, model_name, output_type):
+    print(dataset, model_name, output_type)
     config = load_config(model_name)
     
     # Setup logger
@@ -32,8 +44,9 @@ def run_llm_inference(dataset, model_name, output_type):
     logger.info(f"Logs saved to {os.path.abspath(log_file)}")
 
     # model = ModelWrapper(model_name)
-    print(config['api_key'], config['base_url'])
+    print(config['api_key'], config['base_url'], model_name)  
     model = LLM(config['api_key'], config['base_url'], model_name)
+    # model = LLM("1234567890", "http://0.0.0.0:23333/v1", model_name)
     
     data_path = os.path.join(config["file_paths"][dataset], "test.json")
     with open(data_path, "r") as file:
@@ -47,8 +60,10 @@ def run_llm_inference(dataset, model_name, output_type):
         image_path = os.path.join(
             config["file_paths"][dataset], "images", f"{key}"
         )
-        prompt = load_textualizer_prompt(output_type)
+        if "DifferentialDiagnosisEnglish" not in image_path: continue
+        prompt = "请分析以下流程图，识别其中所有的节点和边，并提取每个节点的类型和内容，同时标明节点间的连接关系。请用Graphviz dot语言将该流程图转化为描述性图形。" # load_textualizer_prompt(output_type)
         image = encode_image(image_path, model_name) if image_path else None
+        print(image)
         messages = load_messages(model_name, prompt, image)
         run_paras.append((key, messages))
 

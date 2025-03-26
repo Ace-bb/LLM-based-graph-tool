@@ -231,9 +231,21 @@
 # Using 8 GPUs, fine-tune the full LLM, cost about 77G per GPU
 GPUS=8 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_full.sh
 # Using 2 GPUs, fine-tune the LoRA, cost about 79G per GPU
-GPUS=1 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora.sh
+GPUS=2 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora.sh
 # Using 8 GPUs, fine-tune the LoRA, cost about 60G per GPU
 GPUS=8 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora.sh
+```
+
+#### 模型合并
+```bash
+python merge_lora.py work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora_unfreeze_llm_backbone_mlp_v2 work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora_unfreeze_llm_backbone_mlp_v2_merge
+```
+
+#### 部署推理
+```bash
+lmdeploy serve api_server work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora_unfreeze_llm_backbone_mlp_v2_merge --backend turbomind --model-name internvl2.5-local --api-keys 1234567890 --server-port 23333
+
+lmdeploy serve api_server models/OpenGVLab/InternVL2_5-8B --backend turbomind --model-name internvl2.5-8B --api-keys 1234567890 --server-port 23333
 ```
 
 <!-- ### 4.模型评估

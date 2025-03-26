@@ -102,4 +102,4 @@ if __name__ == "__main__":
 
 # python evaluation.py --model_name gpt-4o --data_path output/flowchart/graphviz/gpt-4o.json
 # python evaluation.py --model_name gpt-4o --data_path output/flowchart/qwen-plus/graphviz.json
-# python evaluation.py --model_name gpt-4o --data_path output/flowchart/qwen-vl-plus-latest/graphviz.json
+# python evaluation.py --model_name gpt-4o --data_path output/flowchart/internvl2.5-8B/graphviz.json

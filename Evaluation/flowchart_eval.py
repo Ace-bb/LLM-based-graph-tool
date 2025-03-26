@@ -45,7 +45,11 @@ def eval_dot_render_success_rate(model_results):
     """
     success_num = 0
     for f_name in model_results.keys():
-        P_list = pydot.graph_from_dot_data(model_results[f_name]['llm'])
+        try:
+            P_list = pydot.graph_from_dot_data(model_results[f_name]['llm'])
+        except:
+            print(f"Error in {f_name}")
+            continue
         if P_list!=None and len(P_list)>0: 
             graph = P_list[0]
             os.makedirs(os.path.dirname(f"output/tmp_imgs/{f_name}"), exist_ok=True)
@@ -133,8 +137,9 @@ def eval_llm_result(model_result_path):
         if "DifferentialDiagnosisEnglish" not in key: continue
         print(key)
         model_output_dots.append(result["llm"])
-        model_output = transform_dot_2_json(result["llm"])
-        
+        try:
+            model_output = transform_dot_2_json(result["llm"])
+        except: continue
         model_id2node = {}
         for node in model_output['nodes']:
             if "label" in node.keys():

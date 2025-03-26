@@ -24,5 +24,7 @@ def load_config(model_name):
     elif model_name in ['internvl2.5-latest']:
         config['base_url'] = "https://chat.intern-ai.org.cn/api/v1"
         config['api_key'] = "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJqdGkiOiI0MDA1Nzg5Iiwicm9sIjoiUk9MRV9SRUdJU1RFUiIsImlzcyI6Ik9wZW5YTGFiIiwiaWF0IjoxNzQwODUwMzM4LCJjbGllbnRJZCI6ImVibXJ2b2Q2eW8wbmx6YWVrMXlwIiwicGhvbmUiOiIxMzQ4OTMyMzI4NSIsInV1aWQiOiIzNTYwYjNlNy1jZDQ0LTRiOGItYTg5Mi0yMDFiYWRkNTBhMzIiLCJlbWFpbCI6IjEzNDg5MzIzMjg1QDE2My5jb20iLCJleHAiOjE3NTY0MDIzMzh9.PLx_fdc-3rnM5ZTs3f_oJnsTF-bV3-1Aj4QUo6rEYfy7tPt0CRIFXSDSejdTVqy3um24IHOF7mNqT_7iJ05lPA"
-        
+    elif model_name in ['internvl2.5-local', 'internvl2.5-8B']:
+        config['base_url'] = "http://0.0.0.0:23333/v1"
+        config['api_key'] = "1234567890"
     return config

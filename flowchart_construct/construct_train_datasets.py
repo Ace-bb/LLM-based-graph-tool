@@ -304,7 +304,6 @@ class FlowchartDatasetConstructor:
         annot_datasets = []
         random.shuffle(all_imgs)
         train_datasets, eval_datasets = [], []
-        all_imgs = all_imgs[:2200]
         all_num = len(all_imgs)
         all_questions = tools.read_json("data/DOT_Questions.json")
         

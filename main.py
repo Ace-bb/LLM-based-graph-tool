@@ -27,11 +27,15 @@ def main():
     
     """推理测试生成流程图识别结果
     python main.py infer --dataset flowchart --model_name gpt-4o-mini --output_type graphviz
+    
+    python main.py infer --dataset flowchart --model_name internvl2.5-local --output_type graphviz
+    python main.py infer --dataset flowchart --model_name internvl2.5-8B --output_type graphviz
     """
     inference_parser = subparsers.add_parser(name='infer', help='在各个模型上进行推理测试生成流程图识别结果', parents=[parser])
     inference_parser.add_argument("--dataset",type=str,default="flowvqa",help="Dataset to use (flowvqa, flowvqa_bottom_top or flowlearn).")
     inference_parser.add_argument("--model_name",type=str, default="Qwen2-VL-7B", help="The VLM to generate the text represenation.")
     inference_parser.add_argument("--output_type", type=str, default="mermaid", help="Text representation output format (mermaid, graphviz or plantuml)")
+    inference_parser.add_argument("--engine", type=str, default="api", help="调用接口推理，还是本地部署推理)")
     inference_parser.set_defaults(func = inference)
     
     """构造训练数据集

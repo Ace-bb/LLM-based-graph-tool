@@ -197,6 +197,15 @@ def load_messages(model_name, prompt, image=None):
                     ],
                 },
             ],
+            "local": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": image}},
+                    ],
+                },
+            ],
         }
     if "qwen" in model_name:
         return templates["qwen"]
@@ -204,6 +213,8 @@ def load_messages(model_name, prompt, image=None):
         return templates["llama"]
     elif "gpt" in model_name:
         return templates["gpt-4o"]
+    elif "local" in model_name or 'internvl' in model_name:
+        return templates["local"]
     return templates.get(model_name)
 
 

@@ -181,12 +181,29 @@ def trans_flowchart2dot():
 
         flowchart_dot = json_2_dot(None, data)
         tools.write_2_txt(flowchart_dot, flow_file.replace("Json", "Dot").replace(".json", ".dot"))
-        
-if __name__=="__main__":
-    # tansform_dot2json()
+
+def write2jsonl():
+    
     tools = Tools()
     data = tools.read_json("data/FlowchartDatasets/TrainDatasets/Image2DotV1/datasets/flowchart2dot_train.json")
     # 写jsonl文件
     with open("data/FlowchartDatasets/TrainDatasets/Image2DotV1/datasets/flowchart2dot_train.jsonl", "w", encoding="utf-8") as f:
         for item in data:
+            item['image'] = item['image'].replace("data/FlowchartDatasets/TrainDatasets/Image2DotV1/Images//", "")
             f.write(json.dumps(item, ensure_ascii=False)+"\n")
+
+def test_lmdeploy():
+    from lmdeploy_test import pipeline, TurbomindEngineConfig
+    from lmdeploy.vl import load_image
+
+    model = 'work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora_unfreeze_llm_backbone_mlp_v2'
+    image = load_image('https://raw.githubusercontent.com/open-mmlab/mmdeploy/main/tests/data/tiger.jpeg')
+    pipe = pipeline(model, backend_config=TurbomindEngineConfig(session_len=8192))
+    response = pipe(('describe this image', image))
+    print(response.text)
+
+if __name__=="__main__":
+    # tansform_dot2json()
+    test_lmdeploy()
+    # files = glob("data/datasets/Flowchart2DotDatasets/dotV2/Dot/**/*.dot", recursive=True)
+    # print(len(files))
