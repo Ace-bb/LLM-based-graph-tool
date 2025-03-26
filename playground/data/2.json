@@ -1,0 +1,16 @@
+{
+  "id": 0,
+  "image": "/root/LLM-based-graph-tool/data/datasets/frdetr_dataset/train/000001.jpg",
+  "width": 640,
+  "height": 640,
+  "conversations": [
+    {
+      "from": "human",
+      "value": "<image>\nPlease provide the bounding box coordinate of the region this sentence describes: <ref>rec</ref>"
+    },
+    {
+      "from": "gpt",
+      "value": "<ref>rec</ref><box>[[8,23,99,81],[138,23,230,81],[268,23,360,81],[403,110,497,170],[269,209,359,266],[268,380,360,440],[267,468,360,528],[7,551,101,609],[139,551,229,611],[267,550,360,610],[449,288,639,354]]</box>"
+    }
+  ]
+}

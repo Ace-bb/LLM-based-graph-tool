@@ -1,0 +1,443 @@
+[2025-02-25 19:23:19,945] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+Warning: The default cache directory for DeepSpeed Triton autotune, /root/.triton/autotune, appears to be on an NFS system. While this is generally acceptable, if you experience slowdowns or hanging when DeepSpeed exits, it is recommended to set the TRITON_CACHE_DIR environment variable to a non-NFS path.
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.3
+[93m [WARNING] [0m using untested triton version (2.3.1), only 1.0.0 is known to be compatible
+Traceback (most recent call last):
+  File "/root/LLM-based-graph-tool/internvl/train/internvl_chat_finetune.py", line 35, in <module>
+    from internvl.patch import (concat_pad_data_collator,
+  File "/root/LLM-based-graph-tool/internvl/patch/__init__.py", line 19, in <module>
+    from .train_dataloader_patch import replace_train_dataloader
+  File "/root/LLM-based-graph-tool/internvl/patch/train_dataloader_patch.py", line 7, in <module>
+    import datasets
+ModuleNotFoundError: No module named 'datasets'
+[2025-02-25 19:28:29,679] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+Warning: The default cache directory for DeepSpeed Triton autotune, /root/.triton/autotune, appears to be on an NFS system. While this is generally acceptable, if you experience slowdowns or hanging when DeepSpeed exits, it is recommended to set the TRITON_CACHE_DIR environment variable to a non-NFS path.
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.3
+[93m [WARNING] [0m using untested triton version (2.3.1), only 1.0.0 is known to be compatible
+petrel_client is not installed. If you read data locally instead of from ceph, ignore it.
+petrel_client is not installed. Using PIL to load images.
+[2025-02-25 19:29:52,616] [INFO] [comm.py:637:init_distributed] cdb=None
+[2025-02-25 19:29:52,617] [INFO] [comm.py:668:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/accelerate/utils/deepspeed.py", line 51, in __init__
+[rank0]:     config_decoded = base64.urlsafe_b64decode(config_file_or_dict).decode("utf-8")
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/base64.py", line 133, in urlsafe_b64decode
+[rank0]:     return b64decode(s)
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/base64.py", line 87, in b64decode
+[rank0]:     return binascii.a2b_base64(s)
+[rank0]: binascii.Error: Incorrect padding
+
+[rank0]: During handling of the above exception, another exception occurred:
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/root/LLM-based-graph-tool/internvl/train/internvl_chat_finetune.py", line 1072, in <module>
+[rank0]:     main()
+[rank0]:   File "/root/LLM-based-graph-tool/internvl/train/internvl_chat_finetune.py", line 815, in main
+[rank0]:     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/transformers/hf_argparser.py", line 338, in parse_args_into_dataclasses
+[rank0]:     obj = dtype(**inputs)
+[rank0]:   File "<string>", line 121, in __init__
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/transformers/training_args.py", line 1720, in __post_init__
+[rank0]:     self.hf_deepspeed_config = HfTrainerDeepSpeedConfig(self.deepspeed)
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/transformers/integrations/deepspeed.py", line 88, in __init__
+[rank0]:     super().__init__(config_file_or_dict)
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/transformers/integrations/deepspeed.py", line 78, in __init__
+[rank0]:     super().__init__(config_file_or_dict)
+[rank0]:   File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/accelerate/utils/deepspeed.py", line 54, in __init__
+[rank0]:     raise ValueError(
+[rank0]: ValueError: Expected a string path to an existing deepspeed config, or a dictionary, or a base64 encoded string. Received: zero_stage1_config.json
+E0225 19:29:57.909166 140297149538944 torch/distributed/elastic/multiprocessing/api.py:826] failed (exitcode: 1) local_rank: 0 (pid: 264308) of binary: /root/.conda/envs/internvl2/bin/python
+Traceback (most recent call last):
+  File "/root/.conda/envs/internvl2/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 347, in wrapper
+    return f(*args, **kwargs)
+  File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/torch/distributed/run.py", line 879, in main
+    run(args)
+  File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/torch/distributed/run.py", line 870, in run
+    elastic_launch(
+  File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 132, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/root/.conda/envs/internvl2/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 263, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+internvl/train/internvl_chat_finetune.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-02-25_19:29:57
+  host      : intern-studio-4005789
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 264308)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+[2025-02-25 19:39:45,350] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+Warning: The default cache directory for DeepSpeed Triton autotune, /root/.triton/autotune, appears to be on an NFS system. While this is generally acceptable, if you experience slowdowns or hanging when DeepSpeed exits, it is recommended to set the TRITON_CACHE_DIR environment variable to a non-NFS path.
+[93m [WARNING] [0m async_io requires the dev libaio .so object and headers but these were not found.
+[93m [WARNING] [0m async_io: please install the libaio-dev package with apt
+[93m [WARNING] [0m If libaio is already installed (perhaps from source), try setting the CFLAGS and LDFLAGS environment variables to where it can be found.
+[93m [WARNING] [0m Please specify the CUTLASS repo directory as environment variable $CUTLASS_PATH
+[93m [WARNING] [0m sparse_attn requires a torch version >= 1.5 and < 2.0 but detected 2.3
+[93m [WARNING] [0m using untested triton version (2.3.1), only 1.0.0 is known to be compatible
+petrel_client is not installed. If you read data locally instead of from ceph, ignore it.
+petrel_client is not installed. Using PIL to load images.
+[2025-02-25 19:40:10,315] [INFO] [comm.py:637:init_distributed] cdb=None
+[2025-02-25 19:40:10,315] [INFO] [comm.py:668:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+02/25/2025 19:40:10 - WARNING - __main__ - Process rank: 0, device: cuda:0, n_gpu: 1distributed training: True, 16-bits training: False
+02/25/2025 19:40:10 - INFO - __main__ - Training/evaluation parameters TrainingArguments(
+_n_gpu=1,
+adafactor=False,
+adam_beta1=0.9,
+adam_beta2=0.999,
+adam_epsilon=1e-08,
+auto_find_batch_size=False,
+bf16=True,
+bf16_full_eval=False,
+data_seed=None,
+dataloader_drop_last=False,
+dataloader_num_workers=4,
+dataloader_persistent_workers=False,
+dataloader_pin_memory=True,
+ddp_backend=None,
+ddp_broadcast_buffers=None,
+ddp_bucket_cap_mb=None,
+ddp_find_unused_parameters=None,
+ddp_timeout=1800,
+debug=[],
+deepspeed=train/internvl2_5/zero_stage1_config.json,
+disable_tqdm=False,
+dispatch_batches=None,
+do_eval=False,
+do_predict=False,
+do_train=True,
+eval_accumulation_steps=None,
+eval_delay=0,
+eval_steps=None,
+evaluation_strategy=no,
+fp16=False,
+fp16_backend=auto,
+fp16_full_eval=False,
+fp16_opt_level=O1,
+fsdp=[],
+fsdp_config={'min_num_params': 0, 'xla': False, 'xla_fsdp_grad_ckpt': False},
+fsdp_min_num_params=0,
+fsdp_transformer_layer_cls_to_wrap=None,
+full_determinism=False,
+gradient_accumulation_steps=8,
+gradient_checkpointing=False,
+gradient_checkpointing_kwargs=None,
+greater_is_better=None,
+group_by_length=True,
+half_precision_backend=auto,
+hub_always_push=False,
+hub_model_id=None,
+hub_private_repo=False,
+hub_strategy=every_save,
+hub_token=<HUB_TOKEN>,
+ignore_data_skip=False,
+include_inputs_for_metrics=False,
+include_num_input_tokens_seen=False,
+include_tokens_per_second=False,
+jit_mode_eval=False,
+label_names=None,
+label_smoothing_factor=0.0,
+learning_rate=4e-05,
+length_column_name=length,
+load_best_model_at_end=False,
+local_rank=0,
+log_level=passive,
+log_level_replica=warning,
+log_on_each_node=True,
+logging_dir=work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora/runs/Feb25_19-40-10_intern-studio-4005789,
+logging_first_step=False,
+logging_nan_inf_filter=True,
+logging_steps=1.0,
+logging_strategy=steps,
+lr_scheduler_kwargs={},
+lr_scheduler_type=cosine,
+max_grad_norm=1.0,
+max_steps=-1,
+metric_for_best_model=None,
+mp_parameters=,
+neftune_noise_alpha=None,
+no_cuda=False,
+num_train_epochs=1.0,
+optim=adamw_torch,
+optim_args=None,
+output_dir=work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora,
+overwrite_output_dir=True,
+past_index=-1,
+per_device_eval_batch_size=8,
+per_device_train_batch_size=2,
+prediction_loss_only=False,
+push_to_hub=False,
+push_to_hub_model_id=None,
+push_to_hub_organization=None,
+push_to_hub_token=<PUSH_TO_HUB_TOKEN>,
+ray_scope=last,
+remove_unused_columns=True,
+report_to=['tensorboard'],
+resume_from_checkpoint=None,
+run_name=work_dirs/internvl_chat_v2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora,
+save_on_each_node=False,
+save_only_model=False,
+save_safetensors=True,
+save_steps=200,
+save_strategy=steps,
+save_total_limit=1,
+seed=42,
+skip_memory_metrics=True,
+split_batches=False,
+tf32=None,
+torch_compile=False,
+torch_compile_backend=None,
+torch_compile_mode=None,
+torchdynamo=None,
+tpu_metrics_debug=False,
+tpu_num_cores=None,
+use_cpu=False,
+use_ipex=False,
+use_legacy_prediction_loop=False,
+use_mps_device=False,
+warmup_ratio=0.03,
+warmup_steps=0,
+weight_decay=0.05,
+)
+02/25/2025 19:40:11 - INFO - __main__ - Loading Tokenizer: models/OpenGVLab/InternVL2_5-8B
+[INFO|tokenization_utils_base.py:2025] 2025-02-25 19:40:11,408 >> loading file ./tokenizer.model
+[INFO|tokenization_utils_base.py:2025] 2025-02-25 19:40:11,408 >> loading file added_tokens.json
+[INFO|tokenization_utils_base.py:2025] 2025-02-25 19:40:11,408 >> loading file special_tokens_map.json
+[INFO|tokenization_utils_base.py:2025] 2025-02-25 19:40:11,408 >> loading file tokenizer_config.json
+[INFO|tokenization_utils_base.py:2025] 2025-02-25 19:40:11,408 >> loading file tokenizer.json
+[WARNING|logging.py:314] 2025-02-25 19:40:12,329 >> Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+02/25/2025 19:40:12 - INFO - __main__ - Loading InternVLChatModel...
+[INFO|configuration_utils.py:727] 2025-02-25 19:40:12,530 >> loading configuration file models/OpenGVLab/InternVL2_5-8B/config.json
+[INFO|configuration_utils.py:792] 2025-02-25 19:40:12,531 >> Model config InternVLChatConfig {
+  "_commit_hash": null,
+  "architectures": [
+    "InternVLChatModel"
+  ],
+  "auto_map": {
+    "AutoConfig": "configuration_internvl_chat.InternVLChatConfig",
+    "AutoModel": "modeling_internvl_chat.InternVLChatModel",
+    "AutoModelForCausalLM": "modeling_internvl_chat.InternVLChatModel"
+  },
+  "downsample_ratio": 0.5,
+  "dynamic_image_size": true,
+  "force_image_size": 448,
+  "hidden_size": 4096,
+  "llm_config": {
+    "_name_or_path": "internlm/internlm2_5-7b-chat",
+    "add_cross_attention": false,
+    "architectures": [
+      "InternLM2ForCausalLM"
+    ],
+    "attn_implementation": "flash_attention_2",
+    "auto_map": {
+      "AutoConfig": "configuration_internlm2.InternLM2Config",
+      "AutoModel": "modeling_internlm2.InternLM2ForCausalLM",
+      "AutoModelForCausalLM": "modeling_internlm2.InternLM2ForCausalLM",
+      "AutoModelForSequenceClassification": "modeling_internlm2.InternLM2ForSequenceClassification"
+    },
+    "bad_words_ids": null,
+    "begin_suppress_tokens": null,
+    "bias": false,
+    "bos_token_id": 1,
+    "chunk_size_feed_forward": 0,
+    "cross_attention_hidden_size": null,
+    "decoder_start_token_id": null,
+    "diversity_penalty": 0.0,
+    "do_sample": false,
+    "early_stopping": false,
+    "encoder_no_repeat_ngram_size": 0,
+    "eos_token_id": 2,
+    "exponential_decay_length_penalty": null,
+    "finetuning_task": null,
+    "forced_bos_token_id": null,
+    "forced_eos_token_id": null,
+    "hidden_act": "silu",
+    "hidden_size": 4096,
+    "id2label": {
+      "0": "LABEL_0",
+      "1": "LABEL_1"
+    },
+    "initializer_range": 0.02,
+    "intermediate_size": 14336,
+    "is_decoder": false,
+    "is_encoder_decoder": false,
+    "label2id": {
+      "LABEL_0": 0,
+      "LABEL_1": 1
+    },
+    "length_penalty": 1.0,
+    "max_length": 20,
+    "max_position_embeddings": 32768,
+    "min_length": 0,
+    "model_type": "internlm2",
+    "no_repeat_ngram_size": 0,
+    "num_attention_heads": 32,
+    "num_beam_groups": 1,
+    "num_beams": 1,
+    "num_hidden_layers": 32,
+    "num_key_value_heads": 8,
+    "num_return_sequences": 1,
+    "output_attentions": false,
+    "output_hidden_states": false,
+    "output_scores": false,
+    "pad_token_id": 2,
+    "prefix": null,
+    "pretraining_tp": 1,
+    "problem_type": null,
+    "pruned_heads": {},
+    "remove_invalid_values": false,
+    "repetition_penalty": 1.0,
+    "return_dict": true,
+    "return_dict_in_generate": false,
+    "rms_norm_eps": 1e-05,
+    "rope_scaling": {
+      "factor": 2.0,
+      "type": "dynamic"
+    },
+    "rope_theta": 1000000,
+    "sep_token_id": null,
+    "suppress_tokens": null,
+    "task_specific_params": null,
+    "temperature": 1.0,
+    "tf_legacy_loss": false,
+    "tie_encoder_decoder": false,
+    "tie_word_embeddings": false,
+    "tokenizer_class": null,
+    "top_k": 50,
+    "top_p": 1.0,
+    "torch_dtype": "bfloat16",
+    "torchscript": false,
+    "transformers_version": "4.37.2",
+    "typical_p": 1.0,
+    "use_bfloat16": true,
+    "use_cache": true,
+    "vocab_size": 92553
+  },
+  "max_dynamic_patch": 12,
+  "min_dynamic_patch": 1,
+  "model_type": "internvl_chat",
+  "pad2square": false,
+  "ps_version": "v2",
+  "select_layer": -1,
+  "template": "internvl2_5",
+  "tie_word_embeddings": false,
+  "torch_dtype": "bfloat16",
+  "transformers_version": null,
+  "use_backbone_lora": 0,
+  "use_llm_lora": 0,
+  "use_thumbnail": true,
+  "vision_config": {
+    "_name_or_path": "",
+    "add_cross_attention": false,
+    "architectures": [
+      "InternVisionModel"
+    ],
+    "attention_dropout": 0.0,
+    "bad_words_ids": null,
+    "begin_suppress_tokens": null,
+    "bos_token_id": null,
+    "chunk_size_feed_forward": 0,
+    "cross_attention_hidden_size": null,
+    "decoder_start_token_id": null,
+    "diversity_penalty": 0.0,
+    "do_sample": false,
+    "drop_path_rate": 0.0,
+    "dropout": 0.0,
+    "early_stopping": false,
+    "encoder_no_repeat_ngram_size": 0,
+    "eos_token_id": null,
+    "exponential_decay_length_penalty": null,
+    "finetuning_task": null,
+    "forced_bos_token_id": null,
+    "forced_eos_token_id": null,
+    "hidden_act": "gelu",
+    "hidden_size": 1024,
+    "id2label": {
+      "0": "LABEL_0",
+      "1": "LABEL_1"
+    },
+    "image_size": 448,
+    "initializer_factor": 1.0,
+    "initializer_range": 0.02,
+    "intermediate_size": 4096,
+    "is_decoder": false,
+    "is_encoder_decoder": false,
+    "label2id": {
+      "LABEL_0": 0,
+      "LABEL_1": 1
+    },
+    "layer_norm_eps": 1e-06,
+    "length_penalty": 1.0,
+    "max_length": 20,
+    "min_length": 0,
+    "model_type": "intern_vit_6b",
+    "no_repeat_ngram_size": 0,
+    "norm_type": "layer_norm",
+    "num_attention_heads": 16,
+    "num_beam_groups": 1,
+    "num_beams": 1,
+    "num_channels": 3,
+    "num_hidden_layers": 24,
+    "num_return_sequences": 1,
+    "output_attentions": false,
+    "output_hidden_states": false,
+    "output_scores": false,
+    "pad_token_id": null,
+    "patch_size": 14,
+    "prefix": null,
+    "problem_type": null,
+    "pruned_heads": {},
+    "qk_normalization": false,
+    "qkv_bias": true,
+    "remove_invalid_values": false,
+    "repetition_penalty": 1.0,
+    "return_dict": true,
+    "return_dict_in_generate": false,
+    "sep_token_id": null,
+    "suppress_tokens": null,
+    "task_specific_params": null,
+    "temperature": 1.0,
+    "tf_legacy_loss": false,
+    "tie_encoder_decoder": false,
+    "tie_word_embeddings": true,
+    "tokenizer_class": null,
+    "top_k": 50,
+    "top_p": 1.0,
+    "torch_dtype": "bfloat16",
+    "torchscript": false,
+    "transformers_version": "4.37.2",
+    "typical_p": 1.0,
+    "use_bfloat16": true,
+    "use_flash_attn": true
+  }
+}
+
+02/25/2025 19:40:12 - INFO - __main__ - Using flash_attention_2 for InternLM
+[INFO|modeling_utils.py:3473] 2025-02-25 19:40:12,552 >> loading weights file models/OpenGVLab/InternVL2_5-8B/model.safetensors.index.json
+[INFO|modeling_utils.py:1426] 2025-02-25 19:40:12,592 >> Instantiating InternVLChatModel model under default dtype torch.bfloat16.
+[INFO|configuration_utils.py:826] 2025-02-25 19:40:12,593 >> Generate config GenerationConfig {}
+
+[INFO|configuration_utils.py:826] 2025-02-25 19:40:14,135 >> Generate config GenerationConfig {
+  "bos_token_id": 1,
+  "eos_token_id": 2,
+  "pad_token_id": 2
+}
+
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]

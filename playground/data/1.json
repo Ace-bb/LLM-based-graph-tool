@@ -1,0 +1,14 @@
+{
+    "id": 3,
+    "image": "images/9.png",
+    "conversations": [
+        {
+            "from": "human",
+            "value": "<image>\nwhich of these define abutilon panosumb\nd\na\nj Please answer the question based on the options mentioned before."
+        },
+        {
+            "from": "gpt",
+            "value": "d"
+        }
+    ]
+}

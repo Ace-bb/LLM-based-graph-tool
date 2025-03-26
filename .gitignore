@@ -2,11 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+data/FlowchartDatasets
 # C extensions
 *.so
-
 models
+output
+work_dirs
+logs
 # Distribution / packaging
 output_internvl
 repo
@@ -19,6 +21,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+work_dirs/
 lib64/
 parts/
 sdist/
