@@ -10,9 +10,12 @@ def read_dot_file(file_path):
         dot_string = file.read()
     return dot_string
 
-def dot_to_json(dot_file_path):
+def dot_to_json(dot_file_path, is_path=True):
     # 解析DOT格式字符串
-    graphs = pydot.graph_from_dot_data(read_dot_file(dot_file_path))
+    if is_path:
+        graphs = pydot.graph_from_dot_data(read_dot_file(dot_file_path))
+    else:
+        graphs = pydot.graph_from_dot_data(dot_file_path)
     
     if not graphs:
         return None

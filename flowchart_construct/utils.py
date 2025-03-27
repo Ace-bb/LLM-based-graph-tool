@@ -12,10 +12,13 @@ def dot2image(dot_string: str, file_name, output_file: str, format: str = 'png')
     os.makedirs(os.path.dirname(output_file+f".{format}"), exist_ok=True)
     dot_string = dot_string[dot_string.find('{'):]
     # print("===========\ndot2image: ", dot_string, "===========\n")
+    # node [fontname="Arial" fontsize=12 fontcolor=white style=filled margin="0.15" color=none fontcolor=black]
+
     try:
         dot = Digraph(comment=file_name, body=dot_string)
         dot.attr(fontname='SimSun')
         dot.attr(dpi='150')
+        dot.attr('node', fontname='SimSun', fontsize='14', fontcolor='black', style='filled', margin='0.15', color='none')
         dot.render(output_file, format=format, cleanup=True)
     except Exception as e:
         print("===========\ndot2image: ", dot_string, "===========\n")

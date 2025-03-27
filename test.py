@@ -202,8 +202,18 @@ def test_lmdeploy():
     response = pipe(('describe this image', image))
     print(response.text)
 
+def count():
+    files = os.listdir("data/datasets/DXDiseases")
+    tools = Tools()
+    all_num = 0
+    for f in files:
+        data = tools.read_json(f"data/datasets/DXDiseases/{f}")
+        print(f, len(data))
+        all_num += len(data)
+    print(all_num)
+    
 if __name__=="__main__":
     # tansform_dot2json()
-    test_lmdeploy()
+    count()
     # files = glob("data/datasets/Flowchart2DotDatasets/dotV2/Dot/**/*.dot", recursive=True)
     # print(len(files))

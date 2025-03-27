@@ -8,3 +8,16 @@ torchvision
 pillow
 tensorboard
 matplotlib
+opencv-python-headless
+graphviz
+pydot
+mermaid-py
+rich
+tqdm
+openai
+oss2
+pillow
+opencv-python-headless
+graphviz
+pydot
+networkx

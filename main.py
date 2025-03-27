@@ -40,12 +40,15 @@ def main():
     
     """构造训练数据集
     python main.py flowchart --input_file data/datasets/Flowchart2DotDatasets/dotV2/Dot --output_file Image2DotV1 --op_type construct
+    python main.py flowchart --input_file data/datasets/GenerateDiseaseDots/Dot --output_file data/datasets/FlowchartTrainDatasets/V1 --op_type construct
     python main.py flowchart --input_file data/FlowchartDatasets/TrainDatasets/Image2DotV1 --output_file data/FlowchartDatasets/TrainDatasets/Image2DotV2 --op_type filter
+    python main.py flowchart --input_file data/datasets/DXDiseases --output_file data/datasets/GenerateDiseaseDots --op_type generate
+    python main.py flowchart --input_file data/datasets/DifferentialDiagnosisEnglish --output_file data/datasets/DifferentialDiagnosisEnglish --op_type json2dot
     """
     flowchart_parser = subparsers.add_parser(name='flowchart', help='将JSON格式的流程图数据转换成Dot格式和mermaid格式，并构造成数据集', parents=[parser])
     flowchart_parser.add_argument("--input_file", type=str, help="The input file path of the flowchart data in JSON format.")
     flowchart_parser.add_argument("--output_file", type=str, help="The output file path of the flowchart data in Dot and mermaid format.")
-    flowchart_parser.add_argument("--op_type", type=str, default='construct', help="操作类型，构造数据集还是过滤数据集")
+    flowchart_parser.add_argument("--op_type", type=str, default='construct', choices=["construct", "filter", "generate", "json2dot"], help="操作类型，构造数据集还是过滤数据集")
     flowchart_parser.set_defaults(func = flowchart_operate)
     
     """模型训练

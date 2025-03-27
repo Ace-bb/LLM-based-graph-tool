@@ -23,7 +23,7 @@ class LLM:
         else:
             return [choice.message.content for choice in completion.choices]
         
-    def generate(self, prompt)->str|None:
+    def generate(self, prompt):
         tries = 0
         while tries < 20:
             try:

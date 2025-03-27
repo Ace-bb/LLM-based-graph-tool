@@ -2,12 +2,17 @@ import os, json, cv2, re, random, glob
 from conf.settings import *
 from conf.Tools import Tools
 import copy
+import logging
 from graphviz import Source
 from graphviz import Digraph
 from tqdm import tqdm
 import numpy as np
 from flowchart_construct.data_format import create_internvl_data
 from flowchart_construct.utils import dot2image, trans2rect
+from flowchart_construct.json2dot_mermaid import *
+from flowchart_construct.graphviz_dot2json import dot_to_json
+from LLMs.llm import LLM
+from prompts import dx_disease_generate_dot_prompt
 
 DxDiseaseTreeDots = "data/datasets/DxDiseaseTreeDots"
 DxDiseaseTreeImg = "data/datasets/DotImages"
@@ -25,28 +30,24 @@ class FLowchartLLM:
         tools = Tools()
         all_json_files = tools.get_all_dirs_sub_files(json_path)
         for jf in tqdm(all_json_files):
-            print(jf['filename'])
             if not jf['filename'].endswith(".json"): continue
             json_data = tools.read_json(jf['filepath'])
             nodes_content, edges_content = "", ""
-            # node['content'] = node['content'].replace("\n", "\\\n")
             nodes = []
             for node in json_data["nodes"]:
-                node['content'] = node['content'].replace('\n', '')
-
-                # nodes.append()
-            nodes_content = "\n    ".join([f"{node['content']} [shape=box, label=\"{node['content']}\"];" for node in json_data["nodes"]])
-            id2node = {}
-            for node in json_data["nodes"]: id2node[node["id"]] = node["content"]
-            edges_content = "\n    ".join([f"{id2node[edge['source']]} -> {id2node[edge['target']]};" for edge in json_data["edges"]])
-
-            dot_content = """digraph """ + jf['dirs'].split("/")[-1] + " {" +f""" 
-    fontname="conf/SIMSUN.TTC"
-    fontcolor="red
-    {nodes_content}
-
-    {edges_content}            
-"""+ "}"
+                nodes.append({
+                    "id": str(node["id"]),
+                    "label": node["Name"].replace('\n', ''),
+                    "attributes": {"label": node["Name"].replace('\n', '')}
+                })
+            edges = []
+            for edge in json_data["edges"]:
+                edges.append({
+                    "source": edge["sourceNode"],
+                    "target": edge["targetNode"],
+                    "attributes": {"label": edge['label'], "color": "black"}
+                })
+            dot_content = json_2_dot(jf['filename'], {"nodes": nodes, "edges": edges})
             graph = Source(dot_content, encoding='utf-8')
             # 保存 .dot 源文件
             graph.save(f"{dot_save_path}/{jf['dirs']}/{jf['filename'].replace('.json', '.dot')}")
@@ -225,11 +226,85 @@ class FlowchartDatasetConstructor:
             return rewrite_dot
         return None
 
+    def change_node_color(self, flowchart_data):
+        root_color, condition_color, label_color, action_color, exp_color = "#138ab0", "#f2b54a", "#dcd1be", "#bdadd4", "#f69151"
+        source_node = [edge['source'] for edge in flowchart_data['edges']]
+        target_node = [edge['target'] for edge in flowchart_data['edges']]
+        for node in flowchart_data['nodes']:
+            node['attributes']['label'] = node['attributes']['label'].replace('\\\"', '')
+            if node['id']=="root":
+                node['attributes']['fillcolor'] = root_color
+                continue
+            if node['id'] not in source_node:
+                node['attributes']['fillcolor'] = action_color
+                continue
+            node_attributes = node['attributes']
+            
+            if "shape" in node_attributes:
+                if node_attributes['shape'] == "diamond":
+                    node['attributes']['fillcolor'] = condition_color
+                else:
+                    node['attributes']['fillcolor'] = exp_color
+            else:
+                if "?" in node['label']:
+                    node['attributes']['fillcolor'] = condition_color
+                    node['attributes']['shape'] = "diamond"
+                elif "检查" in node['label'] or "检验" in node['label']:
+                    node['attributes']['fillcolor'] = exp_color
+                    node['attributes']['shape'] = "rect"
+                else:
+                    node['attributes']['fillcolor'] = condition_color
+        # new_edges = list()
+        # for edge in flowchart_data['edges']:
+        #     if "label" in 
+        #     edge['attributes']['color'] = label_color
+            
+        return flowchart_data
+    
+    def construct_one_dot(self, origin_dot_path, flowchart_relate_path, dot_save_path, img_save_path, json_save_path):
+        md_content = tools.read_file(origin_dot_path)
+        # 使用正则表达式提取出md_content中的```dot和```之间的内容
+        dot_content = re.search(r'```dot(.*?)```', md_content, re.S).group(1).strip()
+        flowchart_json = dot_to_json(dot_content, False)
+        if flowchart_json is None: return None
+        try:
+            flowchart_data = self.change_node_color(flowchart_json)
+        except Exception as e:
+            print(e)
+            print(f"\nflowchart_json: {flowchart_json}\n")
+            return None
+        
+        flowchart_dot_content = json_2_dot(flowchart_relate_path, flowchart_data)
+        
+        graph = Source(flowchart_dot_content, encoding='utf-8')
+        # 保存 .dot 源文件
+        graph.save(f"{dot_save_path}/{flowchart_relate_path}.dot")
+        # graph.render(f"{img_save_path}/{flowchart_relate_path}", format='png', cleanup=True) 
+        dot2image(flowchart_dot_content, flowchart_relate_path, f"{img_save_path}/{flowchart_relate_path}", "png")
+        tools.write_2_json(flowchart_data, f"{json_save_path}/{flowchart_relate_path}.json")
+            
+    def construct_dot_flowchart_datasets(self, input_path, save_path):
+        md_files = glob.glob(f"{input_path}/**/*.md", recursive=True)
+        dot_save_path = os.path.join(save_path, "Dot")
+        img_save_path = os.path.join(save_path, "Images")
+        json_save_path = os.path.join(save_path, "JSON")
+        success_num = 0
+        run_paras = []
+        for md_f in tqdm(md_files):
+            print(md_f)
+            flowchart_relate_path = md_f.replace(input_path+"/", '').replace('.md', '')
+            run_paras.append((md_f, flowchart_relate_path, dot_save_path, img_save_path, json_save_path))
+        para_res = tools.multi_thread_run(100, self.construct_one_dot, run_paras, description="Construct flowchart datasets")
+        for pr in para_res:
+            if pr is not None:
+                success_num+=1
+        print(f"Success to construct {success_num} flowchart datasets.")
+            
     def construct_img2dot_datasets(self, input_path, save_path):
         print("Start to construct img2dot datasets.")
         dot_path = input_path
         res_save_folder = f"data/FlowchartDatasets/TrainDatasets/{save_path}"
-        all_dot_files = glob.glob(f"{dot_path}/**/*.dot", recursive=True)
+        all_dot_files = glob.glob(f"{dot_path}/**/*.md", recursive=True)
         all_num = len(all_dot_files)
         random.shuffle(all_dot_files)
         
@@ -294,7 +369,62 @@ class FlowchartDatasetConstructor:
         os.makedirs(f"{res_save_folder}/datasets", exist_ok=True)
         tools.write_2_json(train_datasets, f"{res_save_folder}/datasets/flowchart2dot_train.json")
         # tools.write_2_json(eval_datasets, f"data/datasets/Flowchart2DotDatasets/{version}/datasets/flowchart2dot_eval.json")
-        
+    
+    def start_generate_dot(self, disease_content, save_path, img_save_path):
+        llm = LLM(api_key="sk-05d56cbb487f420aafa0a6bf65c766cf", api_base_url="https://api.deepseek.com", model_name="deepseek-chat")
+        # llm.setTemplate(temp=dx_disease_generate_dot_prompt, values=["content"])
+        n=0
+        while n<2:
+            try:
+                mermaid_content = llm.generate(dx_disease_generate_dot_prompt.format(content=disease_content))
+
+                tools.write_2_txt(mermaid_content, save_path + '.md')
+                return
+                try:
+                    tools.write_2_json(json.loads(mermaid_content.replace("```json", '').replace("```","")), save_path+".json")
+                except:
+                    ...
+                return {
+                    "dot_path": save_path,
+                    "img_path": img_save_path
+                }
+            except Exception as e:
+                logging.exception(e)
+            n+=1
+        return None
+    
+    def generate_flowchart_from_dx_disease(self, input_path, save_path):
+        all_departs_disease = tools.read_json("conf/all_disease.json")
+        dx_disease_files = os.listdir(input_path)
+        for disease_file in dx_disease_files:
+            depart_name = disease_file.replace(".json", "")
+            if depart_name not in all_departs_disease.keys(): continue
+            depart_data = tools.read_json(os.path.join(input_path, disease_file))
+            print(len(depart_data))
+            run_paras = list()
+            for did, disease_data in enumerate(depart_data):
+                disease_name, disease_details = disease_data['name'], disease_data['disease_details']
+                titles = [item['title'] for item in disease_details]
+                # 如果["症状", "病因", "诊断"]中的一个都不在titles中，则跳过
+                if not all([item in titles for item in ["症状", "病因", "诊断"]]): continue
+                
+                disease_content = f"## {disease_name}\n"
+                for _id, item in enumerate(disease_details):
+                    if item["title"] not in ["症状", "病因", "诊断"]: continue
+                    disease_content += f"### {item['title']}\n"
+                    disease_content = '\n'.join([f"{qid}+1. {qa['Question']}\n{qa['Answer']}" for qid, qa in enumerate(item['content'])])
+                
+                run_paras.append((disease_content, 
+                        f"{save_path}/Dot/{depart_name}/{disease_name}/{did}__{did}", 
+                        f"{save_path}/Images/{depart_name}/{disease_name}/{did}__{did}"
+                        ))
+            depart_datasets = tools.multi_thread_run(320, self.start_generate_dot, run_paras, description=f"{depart_name}")
+            depart_dot_content = []
+            for dd in depart_datasets:
+                if dd is not None:
+                    depart_dot_content.append(dd)
+            tools.write_2_json(depart_dot_content, f"{save_path}/{depart_name}.json")
+            run_paras=list()
         
     def construct_dot_img_train_datasets(self, input_path, ):
         flowchart_img_path = input_path
@@ -454,11 +584,17 @@ def flowchart_operate(args):
     print(f"input_file:{input_file},\n output_file:{output_file}")
     if args.op_type == "construct":
         flowchart_constructor = FlowchartDatasetConstructor(load_config("qwen-plus"), "qwen-plus-2025-01-25")
-        flowchart_constructor.construct_img2dot_datasets(input_path=input_file, save_path=output_file)
+        flowchart_constructor.construct_dot_flowchart_datasets(input_path=input_file, save_path=output_file)
     elif args.op_type == "filter":
         flowchart_filter = FlowchartFilter()
         flowchart_filter.filter_all_dots(input_file, output_file)
         pass
+    elif args.op_type == "generate":
+        flowchart_constructor = FlowchartDatasetConstructor(load_config("qwen-plus"), "qwen-plus-2025-01-25")
+        flowchart_constructor.generate_flowchart_from_dx_disease(input_path=input_file, save_path=output_file)
+    elif args.op_type == "json2dot":
+        flowchart_llm = FLowchartLLM()
+        flowchart_llm.tansform_json_2_dot(json_path=input_file, dot_save_path=output_file, img_save_path=output_file)
 
 def main():
     from dot2mermaid import dot_to_mermaid
