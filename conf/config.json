@@ -33,7 +33,8 @@
         "flowvqa_bottom_top": "data/flowvqa_bottom_top",
         "flowlearn": "data/flowlearn",
         "output": "output",
-        "flowchart": "data/FlowchartDatasets/FlowchartDatasets"
+        "flowchart": "data/FlowchartDatasets/FlowchartDatasets",
+        "dot": "data/datasets/FlowchartTrainDatasets/V3"
     },
     "api_keys": {
         "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY",

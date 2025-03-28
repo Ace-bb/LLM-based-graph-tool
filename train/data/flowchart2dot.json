@@ -1,7 +1,7 @@
 {
   "flowchart2dot": {
-    "root": "data/FlowchartDatasets/TrainDatasets/Image2DotV1/Images",
-    "annotation": "data/FlowchartDatasets/TrainDatasets/Image2DotV1/datasets/flowchart2dot_train.jsonl",
+    "root": "data/datasets/FlowchartTrainDatasets/V3/Images",
+    "annotation": "data/datasets/FlowchartTrainDatasets/V3/Datasets/flowchart2dot_train.jsonl",
     "data_augment": false,
     "repeat_time": 1,
     "length": 8192

@@ -8,7 +8,7 @@ from graphviz import Digraph
 from tqdm import tqdm
 import numpy as np
 from flowchart_construct.data_format import create_internvl_data
-from flowchart_construct.utils import dot2image, trans2rect
+from flowchart_construct.utils import dot2image, trans2rect, json2image
 from flowchart_construct.json2dot_mermaid import *
 from flowchart_construct.graphviz_dot2json import dot_to_json
 from LLMs.llm import LLM
@@ -196,6 +196,7 @@ class FlowchartDatasetConstructor:
         self.logger = logger
         self.r1 = 0
         self.model_name = model_name
+        self.all_questions = tools.read_json("data/DOT_Questions.json")
         pass
     
     def rewrite_dot_content(self, dot_content):
@@ -230,13 +231,28 @@ class FlowchartDatasetConstructor:
         root_color, condition_color, label_color, action_color, exp_color = "#138ab0", "#f2b54a", "#dcd1be", "#bdadd4", "#f69151"
         source_node = [edge['source'] for edge in flowchart_data['edges']]
         target_node = [edge['target'] for edge in flowchart_data['edges']]
+        filtered_nodes = []
         for node in flowchart_data['nodes']:
-            node['attributes']['label'] = node['attributes']['label'].replace('\\\"', '')
+            if node["id"] not in source_node and node['id'] not in target_node: continue
+            filtered_nodes.append(node)
+        flowchart_data['nodes'] = filtered_nodes
+        for node in flowchart_data['nodes']:
+            if "label" in node['attributes']: label=node['attributes']['label']
+            elif "label" in node: label=node['label']
+            else: label = node['id']
+            label = label.replace('"', '')
+            # label每6个字符增加一个换行
+            # label = '\n'.join([label[i:i+6] for i in range(0, len(label), 6)])
+        
+            node['attributes']['label'] = label.replace('"', '')
+            node['label'] = label.replace('"', '')
+            
             if node['id']=="root":
                 node['attributes']['fillcolor'] = root_color
                 continue
             if node['id'] not in source_node:
                 node['attributes']['fillcolor'] = action_color
+                node['attributes']['shape'] = "rect"
                 continue
             node_attributes = node['attributes']
             
@@ -245,20 +261,36 @@ class FlowchartDatasetConstructor:
                     node['attributes']['fillcolor'] = condition_color
                 else:
                     node['attributes']['fillcolor'] = exp_color
+                    node['attributes']['shape'] = "rect"
             else:
-                if "?" in node['label']:
+                if "?" in label or "？" in label:
                     node['attributes']['fillcolor'] = condition_color
                     node['attributes']['shape'] = "diamond"
-                elif "检查" in node['label'] or "检验" in node['label']:
+                elif "检查" in label or "检验" in label:
                     node['attributes']['fillcolor'] = exp_color
                     node['attributes']['shape'] = "rect"
                 else:
                     node['attributes']['fillcolor'] = condition_color
-        # new_edges = list()
-        # for edge in flowchart_data['edges']:
-        #     if "label" in 
-        #     edge['attributes']['color'] = label_color
-            
+                    
+        # new_edges = []
+        for eid, edge in enumerate(flowchart_data['edges']):
+            if "label" in edge['attributes']:
+                edge['attributes']['label'] = edge['attributes']['label'].replace('"', '')
+        #         new_node_id = f"{edge['source']}_{eid}_{edge['target']}"
+        #         new_edges.append({"source": edge['source'], "target": new_node_id, "attributes": {}})
+        #         new_edges.append({"source": new_node_id, "target": edge['target'], "attributes": {}})
+        #         flowchart_data['nodes'].append({
+        #             "id": new_node_id,
+        #             "label": edge['attributes']['label'],
+        #             "attributes": {
+        #                 "shape": "rect",
+        #                 "color": label_color,
+        #                 "label": edge['attributes']['label'].replace('"', ''),
+        #             }
+        #         })
+        #     else:
+        #         new_edges.append(edge)
+        # flowchart_data['edges'] = new_edges
         return flowchart_data
     
     def construct_one_dot(self, origin_dot_path, flowchart_relate_path, dot_save_path, img_save_path, json_save_path):
@@ -274,31 +306,92 @@ class FlowchartDatasetConstructor:
             print(f"\nflowchart_json: {flowchart_json}\n")
             return None
         
-        flowchart_dot_content = json_2_dot(flowchart_relate_path, flowchart_data)
+        dot_saved_path, image_save_path = json2image(flowchart_data, flowchart_relate_path, f"{dot_save_path}/{flowchart_relate_path}.dot", f"{img_save_path}/{flowchart_relate_path}")
         
-        graph = Source(flowchart_dot_content, encoding='utf-8')
-        # 保存 .dot 源文件
-        graph.save(f"{dot_save_path}/{flowchart_relate_path}.dot")
-        # graph.render(f"{img_save_path}/{flowchart_relate_path}", format='png', cleanup=True) 
-        dot2image(flowchart_dot_content, flowchart_relate_path, f"{img_save_path}/{flowchart_relate_path}", "png")
         tools.write_2_json(flowchart_data, f"{json_save_path}/{flowchart_relate_path}.json")
-            
+        if os.path.exists(image_save_path):
+            img = cv2.imread(image_save_path)
+            if img is None:
+                print(f"Failed to load image {image_save_path}")
+                return None
+            height, width = img.shape[:2]
+            question = random.sample(self.all_questions,1)[0]
+            return {
+                "id": -1,
+                "image": image_save_path,
+                "width": width,
+                "height": height,
+                "conversations": [
+                    {
+                        "from": "human",
+                        "value": f"<image>\n{question}"
+                    },
+                    {
+                        "from": "gpt",
+                        "value": tools.read_file(dot_saved_path)
+                    }
+                ]
+            }
+    
+    def construct_train_test_datasets(self, input_path, save_path):
+        image_files = glob.glob(f"{input_path}/Images/**/*.png", recursive=True)
+        train_f = open(f"{input_path}/Datasets/flowchart2dot_train.jsonl", "a", encoding="utf-8")
+        test_f = open(f"{input_path}/Datasets/flowchart2dot_test.jsonl", "a", encoding="utf-8")
+        data_id = 0
+        for img_f in tqdm(image_files):
+            img = cv2.imread(img_f)
+            if img is None:
+                print(f"Failed to load image {img_f}")
+                return None
+            height, width = img.shape[:2]
+            question = random.sample(self.all_questions,1)[0]
+            flowchart_relate_path = img_f.replace(input_path+"/Images/", '').replace('.png', '')
+            dot_content_path = f"{input_path}/Dot/{flowchart_relate_path}.dot"
+            if not os.path.exists(dot_content_path): continue
+            dot_content = tools.read_file(dot_content_path)
+            if dot_content is None: continue
+            line = json.dumps({
+                "id": data_id,
+                "image": flowchart_relate_path+".png",
+                "width": width,
+                "height": height,
+                "conversations": [
+                    {
+                        "from": "human",
+                        "value": f"<image>\n{question}"
+                    },
+                    {
+                        "from": "gpt",
+                        "value": dot_content
+                    }
+                ]
+            }, ensure_ascii=False)+"\n"
+            if data_id % 11==0:
+                test_f.write(line)
+            else:
+                train_f.write(line)
+            data_id+=1
+        
     def construct_dot_flowchart_datasets(self, input_path, save_path):
         md_files = glob.glob(f"{input_path}/**/*.md", recursive=True)
         dot_save_path = os.path.join(save_path, "Dot")
         img_save_path = os.path.join(save_path, "Images")
         json_save_path = os.path.join(save_path, "JSON")
-        success_num = 0
         run_paras = []
         for md_f in tqdm(md_files):
-            print(md_f)
+            # print(md_f)
             flowchart_relate_path = md_f.replace(input_path+"/", '').replace('.md', '')
             run_paras.append((md_f, flowchart_relate_path, dot_save_path, img_save_path, json_save_path))
-        para_res = tools.multi_thread_run(100, self.construct_one_dot, run_paras, description="Construct flowchart datasets")
-        for pr in para_res:
-            if pr is not None:
-                success_num+=1
-        print(f"Success to construct {success_num} flowchart datasets.")
+        para_res = tools.multi_thread_run(32, self.construct_one_dot, run_paras, description="Construct flowchart datasets")
+        data_id = 0
+        with open(f"{save_path}/flowchart2dot.jsonl", "a", encoding="utf-8") as f:
+            for item in para_res:
+                if item is not None:
+                    item['id']=data_id
+                    f.write(json.dumps(item, ensure_ascii=False) + "\n")
+                    data_id+=1
+                 
+        print(f"Success to construct {data_id} flowchart datasets.")
             
     def construct_img2dot_datasets(self, input_path, save_path):
         print("Start to construct img2dot datasets.")
@@ -584,7 +677,8 @@ def flowchart_operate(args):
     print(f"input_file:{input_file},\n output_file:{output_file}")
     if args.op_type == "construct":
         flowchart_constructor = FlowchartDatasetConstructor(load_config("qwen-plus"), "qwen-plus-2025-01-25")
-        flowchart_constructor.construct_dot_flowchart_datasets(input_path=input_file, save_path=output_file)
+        # flowchart_constructor.construct_dot_flowchart_datasets(input_path=input_file, save_path=output_file)
+        flowchart_constructor.construct_train_test_datasets(input_path=input_file, save_path=output_file)
     elif args.op_type == "filter":
         flowchart_filter = FlowchartFilter()
         flowchart_filter.filter_all_dots(input_file, output_file)

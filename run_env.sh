@@ -15,3 +15,5 @@ apt-get install ttf-wqy-zenhei -y
 apt-get install ttf-mscorefonts-installer -y
 # 6. 楷体 [KaiTi]
 apt-get install ttf-mscorefonts-installer -y
+
+apt-get install graphviz graphviz-dev

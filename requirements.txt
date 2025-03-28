@@ -21,3 +21,4 @@ opencv-python-headless
 graphviz
 pydot
 networkx
+pygraphviz

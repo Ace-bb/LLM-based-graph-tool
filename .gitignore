@@ -21,6 +21,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+Flowchart2Dot/
 work_dirs/
 lib64/
 parts/

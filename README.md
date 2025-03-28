@@ -231,7 +231,7 @@
 # Using 8 GPUs, fine-tune the full LLM, cost about 77G per GPU
 GPUS=8 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_full.sh
 # Using 2 GPUs, fine-tune the LoRA, cost about 79G per GPU
-GPUS=2 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora.sh
+GPUS=1 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora.sh
 # Using 8 GPUs, fine-tune the LoRA, cost about 60G per GPU
 GPUS=8 PER_DEVICE_BATCH_SIZE=2 sh train/internvl2_5/internvl2_5_8b_dynamic_res_2nd_finetune_lora.sh
 ```
@@ -261,3 +261,7 @@ lmdeploy serve api_server models/OpenGVLab/InternVL2_5-8B --backend turbomind --
 6. [书生大模型实战营闯关记录----第三关：8G 显存玩转书生大模型 Demo](http://t.csdnimg.cn/hvzvD)
 7. [书生大模型实战营闯关记录----第二关：实现word_count统计文本中word频次](http://t.csdnimg.cn/NcA9n)
 8. [书生大模型实战营闯关记录----第一关：Linux基础知识，SSH连接远程服务器，Linux常用命令，创建Anaconda虚拟环境](http://t.csdnimg.cn/YlXwv)
+
+
+python -c "import torch; print(torch.__version__)"	# 查看pytorch版本
+python -c "import torch; print(torch.version.cuda)" # 查看pytorch使用的CUDA版本

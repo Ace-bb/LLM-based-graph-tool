@@ -26,7 +26,7 @@ def main():
     subparsers = parser.add_subparsers(help='sub parser', dest='module')
     
     """推理测试生成流程图识别结果
-    python main.py infer --dataset flowchart --model_name gpt-4o-mini --output_type graphviz
+    python main.py infer --dataset dot --model_name gpt-4o-mini --output_type graphviz
     
     python main.py infer --dataset flowchart --model_name internvl2.5-local --output_type graphviz
     python main.py infer --dataset flowchart --model_name internvl2.5-8B --output_type graphviz

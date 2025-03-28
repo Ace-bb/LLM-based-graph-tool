@@ -58,7 +58,7 @@ def run_llm_inference(dataset, model_name, output_type):
     run_paras = []
     for key in tqdm(keys):
         image_path = os.path.join(
-            config["file_paths"][dataset], "images", f"{key}"
+            config["file_paths"][dataset], "Images", f"{key}"
         )
         if "DifferentialDiagnosisEnglish" not in image_path: continue
         prompt = "请分析以下流程图，识别其中所有的节点和边，并提取每个节点的类型和内容，同时标明节点间的连接关系。请用Graphviz dot语言将该流程图转化为描述性图形。" # load_textualizer_prompt(output_type)

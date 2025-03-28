@@ -1,1 +1,1 @@
-python main.py flowchart --input_file data/FlowchartDatasets/TrainDatasets/Image2DotV1 --output_file data/FlowchartDatasets/TrainDatasets/Image2DotV2 --op_type filter
+python main.py flowchart --input_file data/datasets/FlowchartTrainDatasets/V3 --output_file V3 --op_type construct
